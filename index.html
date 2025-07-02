@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyTube - Video Gallery</title>
+    <!-- Google Fonts - Oswald -->
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for responsive video embedding */
@@ -33,7 +34,7 @@
         body {
             font-family: 'Inter', sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for dark mode */
-            overflow-x: hidden; /* Prevent horizontal scroll during sidebar transition */
+            overflow: hidden; /* Hide scrollbar during animation */
         }
 
         /* Apply Oswald font to the MyTube logo */
@@ -86,47 +87,10 @@
             color: #a0aec0;
         }
 
+
         /* Hide elements initially for the detail view and settings page */
         .hidden {
             display: none;
-        }
-        /* Style for when modal is open to prevent background scrolling */
-        body.modal-open {
-            overflow: hidden;
-        }
-
-
-        /* Header specific styles for Android look */
-        header {
-            height: 4.5rem; /* Taller header */
-            padding-top: 0;
-            padding-bottom: 0;
-            display: flex;
-            align-items: center;
-        }
-        header .flex {
-            align-items: center;
-        }
-
-        /* Hamburger icon for mobile */
-        #hamburger-button {
-            display: block; /* Always show hamburger button */
-            background: none;
-            border: none;
-            padding: 0.5rem;
-            cursor: pointer;
-            outline: none;
-            color: #374151; /* Dark gray */
-            transition: color 0.3s ease;
-        }
-        #hamburger-button:hover {
-            color: #1f2937; /* Even darker on hover */
-        }
-        body.dark-mode #hamburger-button {
-            color: #cbd5e0; /* Light gray in dark mode */
-        }
-        body.dark-mode #hamburger-button:hover {
-            color: #e2e8f0; /* Lighter on hover in dark mode */
         }
 
         /* Sidebar specific styles */
@@ -138,108 +102,28 @@
             height: 100%;
             background-color: white;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 50; /* Above main content, same as header */
+            z-index: 40; /* Below header, above main content if needed */
             padding-top: 5rem; /* Space for header */
-            transition: transform 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Main content wrapper adjusts for sidebar on larger screens */
         .main-content-wrapper {
             margin-left: 256px; /* Make space for always-visible sidebar */
             transition: margin-left 0.3s ease-in-out;
-            padding-bottom: 5rem; /* Space for FAB or footer */
         }
 
-        /* Overlay for mobile sidebar */
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 49; /* Below sidebar, above main content */
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .sidebar-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 767px) { /* On small screens (mobile portrait/landscape) */
+        @media (max-width: 767px) { /* On small screens, hide sidebar by default */
             .sidebar {
-                transform: translateX(-100%); /* Off-screen */
+                left: -256px; /* Off-screen */
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Stronger shadow when mobile sidebar opens */
             }
             .sidebar.sidebar-open {
-                transform: translateX(0); /* Slide into view */
+                left: 0; /* Slide into view */
             }
             .main-content-wrapper {
                 margin-left: 0; /* No margin on small screens */
             }
-            /* Adjust header layout for mobile */
-            header {
-                justify-content: space-between;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            header .relative.w-1\/3 { /* Hide search on very small screens, or make it an icon */
-                display: none;
-            }
-            header .flex.items-center:last-child { /* Align logo and hamburger */
-                margin-left: 0.5rem;
-            }
-        }
-
-        @media (min-width: 768px) { /* On larger screens (tablet landscape, desktop) */
-            #hamburger-button {
-                display: none; /* Hide hamburger on larger screens */
-            }
-            .sidebar {
-                position: fixed; /* Keep sidebar fixed */
-                left: 0; /* Always visible */
-                transform: translateX(0); /* Ensure it's not translated */
-            }
-            .main-content-wrapper {
-                margin-left: 256px; /* Make space for always-visible sidebar */
-            }
-            header {
-                justify-content: flex-start; /* Align items to start */
-            }
-            .app-logo {
-                margin-right: 1.5rem; /* Space after logo */
-            }
-        }
-
-        /* Floating Action Button (FAB) */
-        #fab-upload {
-            position: fixed;
-            bottom: 1.5rem; /* 24px from bottom */
-            right: 1.5rem; /* 24px from right */
-            width: 3.5rem; /* 56px width */
-            height: 3.5rem; /* 56px height */
-            background-color: #ef4444; /* Red */
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Stronger shadow */
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            z-index: 100; /* Ensure it's on top */
-            cursor: pointer;
-        }
-        #fab-upload:hover {
-            background-color: #dc2626; /* Darker red on hover */
-            transform: translateY(-2px); /* Slight lift */
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        #fab-upload svg {
-            width: 1.5rem;
-            height: 1.5rem;
         }
 
         /* Toggle switch styles */
@@ -314,7 +198,6 @@
             max-width: 400px;
             width: 90%;
             text-align: center;
-            position: relative; /* For close button positioning */
         }
         body.dark-mode .modal-content {
             background-color: #2d3748;
@@ -402,669 +285,11 @@
             font-size: 2.5rem !important; /* Final size */
             opacity: 1 !important;
         }
-
-        /* Avatar display in header */
-        #user-profile-display {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 9999px; /* Fully rounded */
-            transition: background-color 0.2s ease;
-        }
-        #user-profile-display:hover {
-            background-color: rgba(0, 0, 0, 0.05); /* Light hover effect */
-        }
-        body.dark-mode #user-profile-display:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        #user-avatar {
-            width: 2.5rem; /* 40px */
-            height: 2.5rem; /* 40px */
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 0.5rem;
-            border: 2px solid #ef4444; /* Red border */
-            background-color: #f0f0f0; /* Placeholder background */
-        }
-        #user-username {
-            font-weight: 600;
-            color: #374151;
-        }
-        body.dark-mode #user-username {
-            color: #e2e8f0;
-        }
-
-        /* Avatar selection screen styles */
-        #avatar-selection-page {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 4.5rem - 4rem); /* Full height minus header and footer */
-            padding: 2rem;
-            text-align: center;
-        }
-        #avatar-preview {
-            width: 128px;
-            height: 128px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 1.5rem;
-            border: 4px solid #ef4444;
-            background-color: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            font-weight: bold;
-            color: white;
-            overflow: hidden; /* For gradient icons */
-        }
-        #avatar-preview svg {
-            width: 100%;
-            height: 100%;
-        }
-        #avatar-preview img {
-            width: 100%;
-            height: 100%;
-        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900">
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global Firebase variables
-        let app;
-        let db;
-        let auth;
-        let currentUserId = null;
-        let currentUsername = null;
-        let currentUserAvatar = null;
-        let isAvatarSet = false; // New flag to track if avatar is set
-
-        // Ensure __app_id and __firebase_config are defined (for Canvas environment)
-        // For GitHub Pages, these will likely be undefined unless you inject them via build process.
-        // For local testing on GitHub Pages, consider temporarily hardcoding these values:
-        /*
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID",
-            // measurementId: "YOUR_MEASUREMENT_ID" // Optional
-        };
-        const appId = firebaseConfig.appId;
-        */
-        // Original dynamic loading:
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-
-
-        // Function to hide the intro overlay and show the main app content
-        function showAppContent() {
-            document.getElementById('intro-overlay').style.display = 'none';
-            document.getElementById('app-content').classList.remove('hidden');
-            document.body.style.overflow = 'auto'; // Re-enable scrolling
-            renderVideoGrid(); // Render videos if they're static or use local data
-        }
-
-        // This will run as soon as the HTML is parsed, ensuring the app is shown quickly.
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM Content Loaded. Showing app content and attempting Firebase initialization.");
-            showAppContent(); // Always show the app content first
-
-            // Set default user info if Firebase isn't active yet or fails
-            currentUserId = 'guest-user';
-            currentUsername = 'Guest';
-            currentUserAvatar = generateGradientIcon('G'); // Assuming generateGradientIcon exists
-            isAvatarSet = true;
-            updateUserProfileDisplay(); // Update header with guest info
-
-            // Now, attempt Firebase initialization
-            // We check for firebaseConfig.apiKey to ensure at least a basic config exists.
-            if (Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey) {
-                try {
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    console.log("Firebase initialized successfully.");
-
-                    // Listen for auth state changes *after* initialization
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            console.log("Firebase Auth State Changed: User is signed in.", user.uid);
-                            currentUserId = user.uid;
-                            // Try to load user profile from Firestore, which will update UI or direct to setup
-                            await loadUserProfile(currentUserId);
-                        } else {
-                            console.log("Firebase Auth State Changed: No user signed in. Attempting anonymous sign-in or custom token.");
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                try {
-                                    await signInWithCustomToken(auth, __initial_auth_token);
-                                    console.log("Signed in with custom token.");
-                                } catch (error) {
-                                    console.error("Error signing in with custom token:", error);
-                                    await signInAnonymously(auth); // Fallback to anonymous
-                                    console.log("Signed in anonymously after custom token failure.");
-                                }
-                            } else {
-                                await signInAnonymously(auth);
-                                console.log("Signed in anonymously.");
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.error("Error initializing Firebase:", error);
-                    console.warn("Firebase not fully operational. App will run in limited mode (guest user).");
-                    // The app content is already visible at this point.
-                    // You might display a user-friendly message on the UI here.
-                }
-            } else {
-                console.warn("Firebase config not found or incomplete. Firebase will not be initialized. Running in guest mode.");
-                // The app content is already visible and guest user is set.
-            }
-        });
-
-
-        // Simple hash function for password (NOT SECURE FOR PRODUCTION)
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash |= 0; // Convert to 32bit integer
-            }
-            return hash.toString();
-        }
-
-        // Function to load user profile from Firestore
-        async function loadUserProfile(uid) {
-            if (!db) {
-                console.warn("Firestore not initialized. Cannot load user profile.");
-                return;
-            }
-            try {
-                const userDocRef = doc(db, `artifacts/${appId}/users/${uid}/profile/data`);
-                const userDocSnap = await getDoc(userDocRef);
-
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    currentUsername = userData.username;
-                    currentUserAvatar = userData.avatarUrl;
-                    isAvatarSet = !!userData.avatarUrl; // Update flag
-                    console.log("User profile loaded:", userData);
-                    updateUserProfileDisplay();
-                    // If username is set but avatar isn't, direct to avatar setup
-                    if (currentUsername && !isAvatarSet) {
-                        showAvatarSelectionPage();
-                    } else {
-                        showHomePage(); // Ensure home page is shown after successful profile load
-                    }
-                } else {
-                    console.log("No user profile found for UID:", uid, "Checking MyMoogle signup status.");
-                    if (auth && auth.currentUser && auth.currentUser.isAnonymous) {
-                        const q = query(collection(db, `artifacts/${appId}/public/data/users`), where("uid", "==", auth.currentUser.uid));
-                        const querySnapshot = await getDocs(q);
-                        if (querySnapshot.empty) {
-                            showMyMoogleModal(); // Anonymous user, no public profile yet
-                        } else {
-                            const publicUserData = querySnapshot.docs[0].data();
-                            currentUsername = publicUserData.username;
-                            showAvatarSelectionPage(); // Public profile found, but personal profile incomplete
-                        }
-                    } else {
-                        showMyMoogleModal(); // Fallback to login if somehow no user or profile
-                    }
-                }
-            } catch (error) {
-                console.error("Error loading user profile:", error);
-                showMyMoogleModal(); // Fallback to login on error
-            }
-        }
-
-        // Function to save user profile to Firestore
-        async function saveUserProfile(uid, username, avatarUrl) {
-            if (!db) {
-                console.warn("Firestore not initialized. Cannot save user profile.");
-                return;
-            }
-            try {
-                const userDocRef = doc(db, `artifacts/${appId}/users/${uid}/profile/data`);
-                await setDoc(userDocRef, {
-                    username: username,
-                    avatarUrl: avatarUrl,
-                    createdAt: new Date()
-                }, { merge: true }); // Use merge to avoid overwriting other fields
-                console.log("User profile saved successfully.");
-                currentUsername = username;
-                currentUserAvatar = avatarUrl;
-                isAvatarSet = true;
-                updateUserProfileDisplay();
-                showHomePage(); // Go to home page after saving profile
-            } catch (error) {
-                console.error("Error saving user profile:", error);
-                // Display error to user
-            }
-        }
-
-        // Function to check if username exists during signup
-        async function checkIfUsernameExists(username) {
-            if (!db) {
-                console.warn("Firestore not initialized. Cannot check username existence.");
-                return false;
-            }
-            try {
-                const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, username);
-                const docSnap = await getDoc(userDocRef);
-                return docSnap.exists();
-            } catch (error) {
-                console.error("Error checking username existence:", error);
-                return true;
-            }
-        }
-
-        // Function to add a new user to public users collection
-        async function addNewPublicUser(uid, username, hashedPassword) {
-            if (!db) {
-                console.warn("Firestore not initialized. Cannot add public user.");
-                return;
-            }
-            try {
-                const publicUserDocRef = doc(db, `artifacts/${appId}/public/data/users`, username);
-                await setDoc(publicUserDocRef, {
-                    uid: uid,
-                    username: username,
-                    passwordHash: hashedPassword,
-                    createdAt: new Date()
-                });
-                console.log("Public user record created.");
-            } catch (error) {
-                console.error("Error adding new public user:", error);
-                throw error;
-            }
-        }
-
-        // Function to get user by username and password
-        async function getUserByUsernamePassword(username, hashedPassword) {
-            if (!db) {
-                console.warn("Firestore not initialized. Cannot get user by username/password.");
-                return null;
-            }
-            try {
-                const publicUserDocRef = doc(db, `artifacts/${appId}/public/data/users`, username);
-                const docSnap = await getDoc(publicUserDocRef);
-
-                if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    if (userData.passwordHash === hashedPassword) {
-                        return userData.uid;
-                    }
-                }
-                return null;
-            } catch (error) {
-                console.error("Error getting user by username/password:", error);
-                return null;
-            }
-        }
-
-        // Expose functions to global scope for HTML script to use
-        window.loadUserProfile = loadUserProfile;
-        window.saveUserProfile = saveUserProfile;
-        window.checkIfUsernameExists = checkIfUsernameExists;
-        window.addNewPublicUser = addNewPublicUser;
-        window.getUserByUsernamePassword = getUserByUsernamePassword;
-        window.simpleHash = simpleHash;
-        window.currentUserId = currentUserId;
-        window.currentUsername = currentUsername;
-        window.currentUserAvatar = currentUserAvatar;
-        window.isAvatarSet = isAvatarSet;
-        window.auth = auth;
-        window.signOut = signOut;
-
-        // Dummy functions for pages and UI updates (these are necessary for the main app to function)
-        function updateUserProfileDisplay() {
-            const userProfileDisplay = document.getElementById('user-profile-display');
-            const signInButton = document.getElementById('signin-button');
-            const userAvatarElement = document.getElementById('user-avatar');
-            const usernameElement = document.getElementById('user-username');
-
-            if (currentUsername) {
-                userProfileDisplay.classList.remove('hidden');
-                signInButton.classList.add('hidden');
-                usernameElement.textContent = currentUsername;
-                if (currentUserAvatar && currentUserAvatar.startsWith('http')) { // Check if it's an image URL
-                    userAvatarElement.src = currentUserAvatar;
-                    userAvatarElement.innerHTML = ''; // Clear SVG if image is set
-                } else {
-                    // Fallback to text avatar (SVG) if no image URL or if it's the SVG string
-                    userAvatarElement.src = ''; // Ensure src is empty for SVG
-                    userAvatarElement.innerHTML = currentUserAvatar || generateGradientIcon(currentUsername.charAt(0).toUpperCase());
-                }
-            } else {
-                userProfileDisplay.classList.add('hidden');
-                signInButton.classList.remove('hidden');
-            }
-        }
-
-        function renderVideoGrid() {
-            console.log("Rendering video grid (placeholder).");
-            // Your actual video rendering logic would go here.
-            // This example includes static video cards in the HTML.
-            // If you have dynamic video data, you'd fetch and display it here.
-        }
-
-        function showHomePage() {
-            console.log("Showing home page.");
-            // Hide other pages, show home page
-            document.getElementById('home-page').classList.remove('hidden');
-            document.getElementById('avatar-selection-page').classList.add('hidden');
-            document.getElementById('my-moogle-modal').classList.add('hidden'); // Ensure modal is hidden
-            document.body.classList.remove('modal-open'); // Remove modal overlay class
-        }
-
-        function showAvatarSelectionPage() {
-            console.log("Showing avatar selection page.");
-            // Hide other pages, show avatar selection
-            document.getElementById('home-page').classList.add('hidden');
-            document.getElementById('avatar-selection-page').classList.remove('hidden');
-            document.getElementById('my-moogle-modal').classList.add('hidden'); // Ensure modal is hidden
-            document.body.classList.remove('modal-open'); // Remove modal overlay class
-        }
-
-        function showMyMoogleModal() {
-            console.log("Showing MyMoogle modal.");
-            const myMoogleModal = document.getElementById('my-moogle-modal');
-            if (myMoogleModal) {
-                myMoogleModal.classList.remove('hidden');
-                document.body.classList.add('modal-open'); // Add class to body for overlay styling
-            }
-            // Ensure other pages are hidden when modal is shown
-            document.getElementById('home-page').classList.add('hidden');
-            document.getElementById('avatar-selection-page').classList.add('hidden');
-        }
-
-        function generateGradientIcon(letter) {
-            // Simple SVG gradient icon for avatar placeholder
-            const colors = [
-                "#ef4444", // Red
-                "#f97316", // Orange
-                "#eab308", // Yellow
-                "#22c55e", // Green
-                "#0ea5e9", // Blue
-                "#6366f1", // Indigo
-                "#a855f7"  // Violet
-            ];
-            const color1 = colors[Math.floor(Math.random() * colors.length)];
-            const color2 = colors[Math.floor(Math.random() * colors.length)];
-
-            return `
-                <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="gradient-${letter}-${Math.random().toString(36).substr(2, 9)}" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="${color1}" />
-                            <stop offset="100%" stop-color="${color2}" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="100" height="100" rx="50" fill="url(#gradient-${letter}-${Math.random().toString(36).substr(2, 9)})"/>
-                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="50" font-weight="bold" fill="white" font-family="'Inter', sans-serif">
-                        ${letter}
-                    </text>
-                </svg>
-            `;
-        }
-
-        // Event Listeners for UI interaction (add these if you haven't already)
-        document.addEventListener('DOMContentLoaded', () => {
-            // Hamburger menu toggle
-            const hamburgerButton = document.getElementById('hamburger-button');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-            if (hamburgerButton && sidebar && sidebarOverlay) {
-                hamburgerButton.addEventListener('click', () => {
-                    sidebar.classList.toggle('sidebar-open');
-                    sidebarOverlay.classList.toggle('active');
-                });
-
-                sidebarOverlay.addEventListener('click', () => {
-                    sidebar.classList.remove('sidebar-open');
-                    sidebarOverlay.classList.remove('active');
-                });
-            }
-
-            // Dark mode toggle
-            const darkModeToggle = document.getElementById('dark-mode-toggle');
-            if (darkModeToggle) {
-                // Load saved preference
-                const isDarkMode = localStorage.getItem('darkMode') === 'true';
-                if (isDarkMode) {
-                    document.body.classList.add('dark-mode');
-                    darkModeToggle.checked = true;
-                }
-
-                darkModeToggle.addEventListener('change', () => {
-                    if (darkModeToggle.checked) {
-                        document.body.classList.add('dark-mode');
-                        localStorage.setItem('darkMode', 'true');
-                    } else {
-                        document.body.classList.remove('dark-mode');
-                        localStorage.setItem('darkMode', 'false');
-                    }
-                });
-            }
-
-            // Dummy event listeners for buttons that call the placeholder functions
-            const signInButton = document.getElementById('signin-button');
-            if (signInButton) {
-                signInButton.addEventListener('click', showMyMoogleModal);
-            }
-
-            const closeModalButton = document.getElementById('close-modal');
-            if (closeModalButton) {
-                closeModalButton.addEventListener('click', showHomePage); // Close modal goes to home
-            }
-
-            // MyMoogle modal tab switching
-            const showSignupLink = document.getElementById('show-signup');
-            const showLoginLink = document.getElementById('show-login');
-            const loginForm = document.getElementById('login-form');
-            const signupForm = document.getElementById('signup-form');
-
-            if (showSignupLink && showLoginLink && loginForm && signupForm) {
-                showSignupLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    loginForm.classList.add('hidden');
-                    signupForm.classList.remove('hidden');
-                });
-                showLoginLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    signupForm.classList.add('hidden');
-                    loginForm.classList.remove('hidden');
-                });
-            }
-
-            // Simulate MyMoogle login/signup interactions (replace with actual Firebase Auth later)
-            const loginButton = document.getElementById('login-button');
-            const signupButton = document.getElementById('signup-button');
-            const modalMessage = document.getElementById('modal-message');
-
-            if (loginButton) {
-                loginButton.addEventListener('click', async () => {
-                    const username = document.getElementById('login-username').value;
-                    const password = document.getElementById('login-password').value;
-                    if (!username || !password) {
-                        modalMessage.textContent = "Please enter username and password.";
-                        return;
-                    }
-                    const hashedPassword = simpleHash(password);
-                    const uid = await getUserByUsernamePassword(username, hashedPassword);
-                    if (uid) {
-                        console.log(`User ${username} logged in with UID: ${uid}`);
-                        // In a real app, you'd use Firebase signInWithEmailAndPassword or custom token sign-in here
-                        // For now, we'll just simulate by setting global user info
-                        currentUserId = uid;
-                        currentUsername = username;
-                        currentUserAvatar = generateGradientIcon(username.charAt(0).toUpperCase()); // Generate a temporary avatar
-                        isAvatarSet = true;
-                        updateUserProfileDisplay();
-                        showHomePage();
-                        modalMessage.textContent = "";
-                    } else {
-                        modalMessage.textContent = "Invalid username or password.";
-                    }
-                });
-            }
-
-            if (signupButton) {
-                signupButton.addEventListener('click', async () => {
-                    const username = document.getElementById('signup-username').value;
-                    const password = document.getElementById('signup-password').value;
-                    const confirmPassword = document.getElementById('signup-confirm-password').value;
-
-                    if (!username || !password || !confirmPassword) {
-                        modalMessage.textContent = "Please fill all fields.";
-                        return;
-                    }
-                    if (password !== confirmPassword) {
-                        modalMessage.textContent = "Passwords do not match.";
-                        return;
-                    }
-                    if (password.length < 6) {
-                        modalMessage.textContent = "Password must be at least 6 characters long.";
-                        return;
-                    }
-
-                    // Check if username exists using Firestore (if Firebase is initialized)
-                    if (db && await checkIfUsernameExists(username)) {
-                        modalMessage.textContent = "Username already taken.";
-                        return;
-                    }
-
-                    const hashedPassword = simpleHash(password);
-                    // Simulate creating a new Firebase user ID (or use Firebase Auth createUser here)
-                    const newUid = `mymoogle-${Date.now()}`; // Just a dummy UID
-
-                    try {
-                        // Attempt to add new public user
-                        await addNewPublicUser(newUid, username, hashedPassword);
-
-                        // Simulate Firebase custom token sign-in after public user creation
-                        // In a real app, you'd call a backend function to mint a custom token for this new user
-                        // and then sign in with it using signInWithCustomToken(auth, token);
-                        // For now, we'll just set the current user locally.
-                        currentUserId = newUid;
-                        currentUsername = username;
-                        currentUserAvatar = generateGradientIcon(username.charAt(0).toUpperCase());
-                        isAvatarSet = false; // Avatar needs to be set after signup
-                        updateUserProfileDisplay();
-                        modalMessage.textContent = "";
-                        showAvatarSelectionPage(); // Direct new user to avatar selection
-                    } catch (error) {
-                        console.error("Error during signup:", error);
-                        modalMessage.textContent = `Signup failed: ${error.message || 'Unknown error'}`;
-                    }
-                });
-            }
-
-            // Save Avatar button
-            const saveAvatarButton = document.getElementById('save-avatar-button');
-            if (saveAvatarButton) {
-                saveAvatarButton.addEventListener('click', async () => {
-                    if (currentUserId && currentUsername && currentUserAvatar) {
-                        await saveUserProfile(currentUserId, currentUsername, currentUserAvatar);
-                    } else {
-                        console.warn("Cannot save avatar: User or avatar data missing.");
-                        showHomePage(); // Fallback to home even if not saved
-                    }
-                });
-            }
-
-            // Avatar options in settings/selection page
-            document.querySelectorAll('.avatar-option, .avatar-option-settings').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const letter = e.target.dataset.avatar || e.target.textContent.trim();
-                    const avatarSvg = generateGradientIcon(letter);
-                    const previewElement = e.target.closest('#avatar-selection-page') ? document.getElementById('avatar-preview') : document.getElementById('settings-avatar-preview');
-                    if (previewElement) {
-                        previewElement.innerHTML = avatarSvg;
-                        currentUserAvatar = avatarSvg; // Store the SVG string directly
-                    }
-                });
-            });
-
-            // Save settings button (for username and avatar)
-            const saveSettingsButton = document.getElementById('save-settings-button');
-            if (saveSettingsButton) {
-                saveSettingsButton.addEventListener('click', async () => {
-                    const newUsername = document.getElementById('username-input').value;
-                    // For simplicity, we assume currentUserAvatar is updated by clicking an avatar option
-                    if (currentUserId && newUsername && currentUserAvatar) {
-                        await saveUserProfile(currentUserId, newUsername, currentUserAvatar);
-                        alert("Settings saved!");
-                        showHomePage(); // Go back to home after saving
-                    } else {
-                        alert("Please provide a username and select an avatar.");
-                    }
-                });
-            }
-
-            // Sign Out button
-            const signoutButton = document.getElementById('signout-button');
-            if (signoutButton) {
-                signoutButton.addEventListener('click', async () => {
-                    if (auth) {
-                        try {
-                            await signOut(auth);
-                            console.log("User signed out from Firebase.");
-                        } catch (error) {
-                            console.error("Error signing out:", error);
-                        }
-                    }
-                    // Reset local user state and update UI
-                    currentUserId = null;
-                    currentUsername = null;
-                    currentUserAvatar = null;
-                    isAvatarSet = false;
-                    updateUserProfileDisplay();
-                    showMyMoogleModal(); // Direct to login after sign out
-                    alert("You have been signed out.");
-                });
-            }
-
-            // Navigation links
-            const homeLink = document.getElementById('home-link');
-            if (homeLink) {
-                homeLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showHomePage();
-                });
-            }
-            const settingsLink = document.getElementById('settings-link'); // Assuming you add a settings link in sidebar
-            if (settingsLink) {
-                settingsLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.getElementById('home-page').classList.add('hidden');
-                    document.getElementById('settings-page').classList.remove('hidden');
-                    // Populate settings inputs with current user data
-                    document.getElementById('username-input').value = currentUsername || '';
-                    const settingsAvatarPreview = document.getElementById('settings-avatar-preview');
-                    if (settingsAvatarPreview) {
-                        settingsAvatarPreview.innerHTML = currentUserAvatar || generateGradientIcon(currentUsername ? currentUsername.charAt(0).toUpperCase() : 'G');
-                    }
-                });
-            }
-        });
-
-    </script>
-
+    <!-- Intro Animation Overlay -->
     <div id="intro-overlay">
         <div id="intro-square">
             <div id="intro-play-button"></div>
@@ -1075,17 +300,15 @@
         <div id="intro-mouse"></div>
     </div>
 
+    <!-- Main Application Content -->
     <div id="app-content" class="hidden">
-        <header class="bg-white shadow-sm px-4 md:px-6 mb-6 rounded-b-lg flex items-center justify-between sticky top-0 z-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm p-4 mb-6 rounded-b-lg flex items-center justify-between sticky top-0 z-50">
             <div class="flex items-center">
-                <button id="hamburger-button" class="md:hidden mr-3">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-                <h1 class="text-3xl font-bold text-red-600 mytube-logo py-3">MyTube</h1>
+                <h1 class="text-3xl font-bold text-red-600 mytube-logo">MyTube</h1>
             </div>
 
+            <!-- Simple search bar placeholder -->
             <div class="relative w-1/3 max-w-lg hidden sm:block">
                 <input type="text" id="search-input" placeholder="Search..." class="w-full p-2 pl-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
@@ -1093,25 +316,25 @@
                 </svg>
             </div>
 
+            <!-- User profile/login placeholder -->
             <div class="flex items-center space-x-4">
-                <button id="signin-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out">
+                <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out hidden md:block">
+                    Upload
+                </button>
+                <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out">
                     Sign In
                 </button>
-                <div id="user-profile-display" class="hidden">
-                    <img id="user-avatar" src="" alt="User Avatar" class="w-10 h-10 rounded-full object-cover">
-                    <span id="user-username"></span>
-                </div>
             </div>
         </header>
 
-        <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
+        <!-- Main Content Area - Wrapper for Sidebar and Content -->
         <div id="main-content-wrapper" class="flex flex-grow ml-0 md:ml-64 transition-all duration-300 ease-in-out p-4">
+            <!-- Sidebar -->
             <aside id="sidebar" class="sidebar">
                 <nav>
                     <ul>
                         <li class="mb-2">
-                            <a href="#" id="home-link" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
+                            <a href="#" id="home-link" class="flex items-center p-2 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l-7 7m7-7v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                 </svg>
@@ -1119,7 +342,7 @@
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
+                            <a href="#" class="flex items-center p-2 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
@@ -1127,9 +350,25 @@
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="#" id="settings-link" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
+                            <a href="#" class="flex items-center p-2 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.562.343 1.25-.01 1.724-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v2m14 0h2m-2 0h-2" />
+                                </svg>
+                                Subscriptions
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="flex items-center p-2 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                                </svg>
+                                Library
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" id="settings-link" class="flex items-center p-2 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 Settings
@@ -1139,141 +378,397 @@
                 </nav>
             </aside>
 
-            <main class="flex-1 p-4" id="home-page">
-                <h2 class="text-2xl font-bold mb-4">Recommended Videos</h2>
-                <div id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
-                        <div class="video-container">
-                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+1" alt="Video Thumbnail 1">
-                            </div>
-                        <div class="p-4">
-                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">AI-Generated Content Explained</h3>
-                            <p class="text-gray-600 text-sm dark:text-gray-400">Tech Insights • 2.5M views • 3 days ago</p>
+            <!-- Content Area (Video Grid / Video Detail / Settings Page) -->
+            <div class="flex-1 p-4">
+                <!-- Video Grid Section -->
+                <section id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Video 1: keys by Charlles -->
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
+                         data-video-id="TolWZ965kec"
+                         data-title="keys"
+                         data-channel="Charlles"
+                         data-description="Lyrics: (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock. (Why'd you lock me out?) (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock (Why'd you lock me out?)">
+                        <div class="video-container mb-4">
+                            <img src="https://img.youtube.com/vi/TolWZ965kec/hqdefault.jpg" alt="Video Thumbnail: keys">
                         </div>
+                        <h2 class="text-lg font-semibold mb-2">keys</h2>
+                        <p class="text-sm text-gray-600">Charlles</p>
                     </div>
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
-                        <div class="video-container">
-                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+2" alt="Video Thumbnail 2">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">The Future of Web Development</h3>
-                            <p class="text-gray-600 text-sm dark:text-gray-400">Code Innovators • 1.8M views • 1 week ago</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
-                        <div class="video-container">
-                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+3" alt="Video Thumbnail 3">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">Creative Design Trends 2025</h3>
-                            <p class="text-gray-600 text-sm dark:text-gray-400">Design Studio • 900K views • 2 days ago</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
-                        <div class="video-container">
-                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+4" alt="Video Thumbnail 4">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">Mastering Prompt Engineering</h3>
-                            <p class="text-gray-600 text-sm dark:text-gray-400">AI Gurus • 3.1M views • 4 days ago</p>
-                        </div>
-                    </div>
-                    </div>
-            </main>
 
-            <div id="avatar-selection-page" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-center dark:text-gray-100">Choose Your Avatar</h2>
-                <div id="avatar-preview" class="mx-auto"></div>
-                <div class="flex flex-wrap justify-center gap-4 mt-6">
-                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="A">A</button>
-                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="B">B</button>
-                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="C">C</button>
-                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="D">D</button>
-                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="E">E</button>
-                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="F">F</button>
+                    <!-- Video 2: Incredibox V9 Bonus Tracks - BDB (Visualizer) by Incredibox -->
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
+                         data-video-id="KDpw8eW1d4s"
+                         data-title="Incredibox V9 Bonus Tracks - BDB (Visualizer)"
+                         data-channel="Incredibox"
+                         data-description="BDB, the third single from the V9 Bonus Tracks EP! Pump it up and chill. Stream it now!">
+                        <div class="video-container mb-4">
+                            <img src="https://img.youtube.com/vi/KDpw8eW1d4s/hqdefault.jpg" alt="Video Thumbnail: Incredibox V9 Bonus Tracks - BDB (Visualizer)">
+                        </div>
+                        <h2 class="text-lg font-semibold mb-2">Incredibox V9 Bonus Tracks - BDB (Visualizer)</h2>
+                        <p class="text-sm text-gray-600">Incredibox</p>
                     </div>
-                <button id="save-avatar-button" class="mt-8 bg-red-600 text-white py-3 px-6 rounded-full text-lg font-semibold shadow-md hover:bg-red-700 transition duration-300 ease-in-out">
-                    Save Avatar
-                </button>
+
+                    <!-- Video 3: How I Made the Ultimate "Portable" Wii -->
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
+                         data-video-id="Cs3lYiFEOU0"
+                         data-title="How I Made the Ultimate 'Portable' Wii"
+                         data-channel="Shank Mods"
+                         data-description="I've completed yet another childhood dream of mine: owning and making a portable Wii console! This thing was really fun to make and use.">
+                        <div class="video-container mb-4">
+                            <img src="https://img.youtube.com/vi/Cs3lYiFEOU0/hqdefault.jpg" alt="Video Thumbnail: How I Made the Ultimate 'Portable' Wii">
+                        </div>
+                        <h2 class="text-lg font-semibold mb-2">How I Made the Ultimate "Portable" Wii</h2>
+                        <p class="text-sm text-gray-600">Shank Mods</p>
+                    </div>
+
+                    <!-- Video 4: Playing a Game Console Which Doesn’t Exist by James Channel -->
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
+                         data-video-id="R5jZRV2D-rM"
+                         data-title="Playing a Game Console Which Doesn’t Exist"
+                         data-channel="James Channel"
+                         data-description="What if, instead of just miniaturizing consoles, your next DIY project was constructing one from scratch? The PICO-8 is a digital 'console' designed for ultra-compact, retro-style gaming, with the slight caveat that it doesn't actually exist physically.">
+                        <div class="video-container mb-4">
+                            <img src="https://img.youtube.com/vi/R5jZRV2D-rM/hqdefault.jpg" alt="Video Thumbnail: Playing a Game Console Which Doesn’t Exist">
+                        </div>
+                        <h2 class="text-lg font-semibold mb-2">Playing a Game Console Which Doesn’t Exist</h2>
+                        <p class="text-sm text-gray-600">James Channel</p>
+                    </div>
+
+                    <!-- Video 5: Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming] by TetraBitGaming -->
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
+                         data-video-id="7avqbIE1eAM"
+                         data-title="Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]"
+                         data-channel="TetraBitGaming"
+                         data-description="Top 10s, Lost Bits, Mystery Bits, Bit Lift.. ALL THE BITS ARE HERE!">
+                        <div class="video-container mb-4">
+                            <img src="https://img.youtube.com/vi/7avqbIE1eAM/hqdefault.jpg" alt="Video Thumbnail: Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]">
+                        </div>
+                        <h2 class="text-lg font-semibold mb-2">Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]</h2>
+                        <p class="text-sm text-gray-600">TetraBitGaming</p>
+                    </div>
+
+                    <!-- Video 6: ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep by Cosmo Whispers ASMR -->
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
+                         data-video-id="nJ1jjDzlJgM"
+                         data-title="ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep"
+                         data-channel="Cosmo Whispers ASMR"
+                         data-description="WARNING!: There are some mild flashing lights towards the end of this video! If you are sensitive to lights please watch with caution! My goal is to help recreate that feeling for some of you!">
+                        <div class="video-container mb-4">
+                            <img src="https://img.youtube.com/vi/nJ1jjDzlJgM/hqdefault.jpg" alt="Video Thumbnail: ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep">
+                        </div>
+                        <h2 class="text-lg font-semibold mb-2">ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep</h2>
+                        <p class="text-sm text-gray-600">Cosmo Whispers ASMR</p>
+                    </div>
+
+                    <!-- Video 7: Can I get Windows 98 running on my CAR? by Kolarias -->
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
+                         data-video-id="UxGQoP3wPxM"
+                         data-title="Can I get Windows 98 running on my CAR?"
+                         data-channel="Kolarias"
+                         data-description="With Windows ME only needing 8MB of RAM to function, it's time we take a look at Windows 98. While ME and 98 may look similar, 98 is a lot more lighter weight than ME.">
+                        <div class="video-container mb-4">
+                            <img src="https://img.youtube.com/vi/UxGQoP3wPxM/hqdefault.jpg" alt="Video Thumbnail: Can I get Windows 98 running on my CAR?">
+                        </div>
+                        <h2 class="text-lg font-semibold mb-2">Can I get Windows 98 running on my CAR?</h2>
+                     <!-- Video 8: The first ever Samsung "Galaxy S" -->   <p class="text-sm text-gray-600">Kolarias</p>
+                    </div>
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4" data-video-id="aajQJtc-oQl"
+                         data-title="The first ever Samsung &quot;Galaxy S&quot;"
+                         data-channel="DankPods"
+                         data-description="Extra vids for Floaties! https://www.floatplane.com/channel/Th...
+Car Channel:    / @garbagetime420  
+Game Channel:    / @helloimgaming  
+Drum Channel:    / @the.drum.thing  ">
+                        <div class="video-container mb-">
+                            <img src="https://img.youtube.com/vi/aajQJtc-oQl/mqdefault.jpg"
+                        </div>
+                </section>
+
+                <!-- Video Detail Section (Initially Hidden) -->
+                <section id="video-detail" class="hidden bg-white rounded-lg shadow-md p-6">
+                    <button id="back-button-video" class="mb-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Home
+                    </button>
+                    <div class="video-container mb-6">
+                        <iframe id="detail-video-player" src="" allowfullscreen></iframe>
+                    </div>
+                    <h2 id="detail-video-title" class="text-2xl font-bold mb-2"></h2>
+                    <p id="detail-video-channel" class="text-lg text-gray-700 mb-4"></p>
+                    <p id="detail-video-description" class="text-base text-gray-800"></p>
+                </section>
+
+                <!-- Settings Page (Initially Hidden) -->
+                <section id="settings-page" class="hidden bg-white rounded-lg shadow-md p-6">
+                    <button id="back-button-settings" class="mb-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Home
+                    </button>
+                    <h2 class="text-2xl font-bold mb-6">Settings</h2>
+
+                    <div class="mb-6 flex items-center justify-between">
+                        <label for="autoplay-toggle" class="text-lg">Autoplay Videos</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoplay-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="mb-6 flex items-center justify-between">
+                        <label for="dark-mode-toggle" class="text-lg">Dark Mode</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dark-mode-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <button id="reset-data-button" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out mt-4">
+                        Reset All Data
+                    </button>
+                </section>
             </div>
+        </div>
 
-            <div id="my-moogle-modal" class="modal-overlay hidden">
-                <div class="modal-content dark:bg-gray-800">
-                    <h3 class="text-xl font-bold mb-4 dark:text-gray-100">MyMoogle Account</h3>
-                    <div id="login-form">
-                        <input type="text" id="login-username" placeholder="Username" class="w-full p-2 mb-3 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                        <input type="password" id="login-password" placeholder="Password" class="w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                        <button id="login-button" class="w-full bg-red-600 text-white py-2 rounded-md font-semibold hover:bg-red-700">Login</button>
-                        <p class="mt-4 text-sm text-gray-700 dark:text-gray-300">Don't have an account? <a href="#" id="show-signup" class="text-red-600 hover:underline">Sign Up</a></p>
-                    </div>
-                    <div id="signup-form" class="hidden">
-                        <input type="text" id="signup-username" placeholder="Choose a Username" class="w-full p-2 mb-3 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                        <input type="password" id="signup-password" placeholder="Create Password" class="w-full p-2 mb-3 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                        <input type="password" id="signup-confirm-password" placeholder="Confirm Password" class="w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                        <button id="signup-button" class="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700">Sign Up</button>
-                        <p class="mt-4 text-sm text-gray-700 dark:text-gray-300">Already have an account? <a href="#" id="show-login" class="text-blue-600 hover:underline">Login</a></p>
-                    </div>
-                    <p id="modal-message" class="text-sm text-red-500 mt-3"></p>
-                    <button id="close-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <!-- Reset Data Confirmation Modal -->
+        <div id="reset-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h3 class="text-xl font-bold mb-4">Confirm Reset</h3>
+                <p class="mb-6">Are you sure you want to reset all your data? This action cannot be undone.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="cancel-reset" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
+                        Cancel
+                    </button>
+                    <button id="confirm-reset" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
+                        Reset
                     </button>
                 </div>
             </div>
-
         </div>
 
-        <button id="fab-upload">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-        </button>
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white p-4 mt-6 text-center rounded-t-lg">
+            <p>© 2025 MyTube. All rights reserved.</p>
+        </footer>
     </div>
 
-    <div id="video-detail-page" class="hidden">
-        <h2 class="text-2xl font-bold text-center mt-8 dark:text-gray-100">Video Detail Page (Coming Soon!)</h2>
-        <p class="text-center text-gray-600 dark:text-gray-400">This page would show a single video, comments, and related videos.</p>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const sidebar = document.getElementById('sidebar');
+            const mainContentWrapper = document.getElementById('main-content-wrapper');
 
-    <div id="settings-page" class="hidden">
-        <div class="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md mt-8 dark:bg-gray-800">
-            <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Settings</h2>
+            const videoGridSection = document.getElementById('video-grid');
+            const videoDetailSection = document.getElementById('video-detail');
+            const detailVideoPlayer = document.getElementById('detail-video-player');
+            const detailVideoTitle = document.getElementById('detail-video-title');
+            const detailVideoChannel = document.getElementById('detail-video-channel');
+            const detailVideoDescription = document.getElementById('detail-video-description');
 
-            <div class="flex items-center justify-between mb-4">
-                <label for="dark-mode-toggle" class="text-lg font-medium text-gray-700 dark:text-gray-300">Dark Mode</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="dark-mode-toggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
+            const homeLink = document.getElementById('home-link');
+            const settingsLink = document.getElementById('settings-link');
+            const settingsPage = document.getElementById('settings-page');
+            const backButtonVideo = document.getElementById('back-button-video');
+            const backButtonSettings = document.getElementById('back-button-settings');
 
-            <div class="mb-6">
-                <label for="username-input" class="block text-lg font-medium text-gray-700 mb-2 dark:text-gray-300">Username</label>
-                <input type="text" id="username-input" class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="Your username">
-            </div>
+            const autoplayToggle = document.getElementById('autoplay-toggle');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const resetDataButton = document.getElementById('reset-data-button');
+            const resetModal = document.getElementById('reset-modal');
+            const confirmResetButton = document.getElementById('confirm-reset');
+            const cancelResetButton = document.getElementById('cancel-reset');
 
-            <div class="mb-6">
-                <label class="block text-lg font-medium text-gray-700 mb-2 dark:text-gray-300">Avatar</label>
-                <div id="settings-avatar-preview" class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-4xl font-bold text-gray-700 mb-4 mx-auto border-4 border-red-500 dark:bg-gray-700 dark:text-gray-300">
-                    </div>
-                <div class="flex flex-wrap justify-center gap-3">
-                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="A">A</button>
-                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="B">B</button>
-                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="C">C</button>
-                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="D">D</button>
-                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="E">E</button>
-                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="F">F</button>
-                    </div>
-            </div>
+            // Intro animation elements
+            const introOverlay = document.getElementById('intro-overlay');
+            const introSquare = document.getElementById('intro-square');
+            const introPlayButton = document.getElementById('intro-play-button');
+            const introMouse = document.getElementById('intro-mouse');
+            const introLogoText = document.getElementById('intro-logo-text');
+            const appContent = document.getElementById('app-content');
 
-            <button id="save-settings-button" class="w-full bg-red-600 text-white py-2 rounded-md font-semibold hover:bg-red-700 transition duration-300 ease-in-out">
-                Save Settings
-            </button>
+            // Search functionality elements
+            const searchInput = document.getElementById('search-input');
+            const videoCards = document.querySelectorAll('.video-card');
 
-            <button id="signout-button" class="w-full mt-4 bg-gray-200 text-gray-800 py-2 rounded-md font-semibold hover:bg-gray-300 transition duration-300 ease-in-out dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600">
-                Sign Out
-            </button>
-        </div>
-    </div>
 
+            // --- Intro Animation Sequence ---
+            function startIntroAnimation() {
+                const squareRect = introSquare.getBoundingClientRect();
+                const squareCenterX = squareRect.left + squareRect.width / 2;
+                const squareCenterY = squareRect.top + squareRect.height / 2;
+
+                // Set initial mouse position
+                introMouse.style.left = `${squareCenterX}px`;
+                introMouse.style.top = `${squareCenterY}px`;
+                introMouse.style.opacity = 1;
+
+                // Step 1: Mouse moves to play button and clicks
+                setTimeout(() => {
+                    introMouse.classList.add('clicking'); // Simulate click
+                    setTimeout(() => {
+                        introMouse.classList.remove('clicking');
+                        introMouse.style.opacity = 0; // Make mouse disappear after click
+
+                        // Step 2: Play button fades out
+                        introPlayButton.style.opacity = 0;
+
+                        // Step 3: Square spins and scales up, then fades out
+                        introSquare.style.transform = 'scale(2) rotate(360deg)';
+                        introSquare.style.opacity = 0; // Fade out the square
+
+                        // Step 4: MyTube text appears and scales up
+                        introLogoText.classList.add('show-logo-text');
+
+                        setTimeout(() => {
+                            // Step 5: Fade out intro overlay and show app content
+                            introOverlay.style.opacity = 0;
+                            introOverlay.style.pointerEvents = 'none'; // Disable pointer events
+                            setTimeout(() => {
+                                introOverlay.classList.add('hidden');
+                                appContent.classList.remove('hidden');
+                                body.style.overflow = 'auto'; // Re-enable scrolling
+                            }, 500); // Duration of introOverlay fade-out
+                        }, 700); // Duration for text to appear (after square starts fading)
+                    }, 200); // Short click duration
+                }, 1000); // Initial delay before mouse click animation starts
+            }
+
+            // Start animation when DOM is fully loaded
+            startIntroAnimation();
+
+            // --- Utility Functions for Page Navigation ---
+            function showSection(sectionToShow) {
+                videoGridSection.classList.add('hidden');
+                videoDetailSection.classList.add('hidden');
+                settingsPage.classList.add('hidden');
+                sectionToShow.classList.remove('hidden');
+            }
+
+            function showVideoGrid() {
+                detailVideoPlayer.src = ""; // Stop video playback
+                showSection(videoGridSection);
+            }
+
+            function showVideoDetail(videoId, title, channel, description) {
+                const autoplayParam = autoplayToggle.checked ? '?autoplay=1' : '';
+                detailVideoPlayer.src = `https://www.youtube.com/embed/${videoId}${autoplayParam}`;
+                detailVideoTitle.textContent = title;
+                detailVideoChannel.textContent = channel;
+                detailVideoDescription.textContent = description;
+                showSection(videoDetailSection);
+            }
+
+            function showSettingsPage() {
+                showSection(settingsPage);
+            }
+
+            // --- Autoplay Logic ---
+            const autoplayEnabled = localStorage.getItem('autoplayEnabled') === 'true';
+            autoplayToggle.checked = autoplayEnabled;
+
+            autoplayToggle.addEventListener('change', () => {
+                localStorage.setItem('autoplayEnabled', autoplayToggle.checked);
+            });
+
+            // --- Dark Mode Logic ---
+            const darkModeEnabled = localStorage.getItem('darkModeEnabled') === 'true';
+
+            function applyDarkMode(isEnabled) {
+                if (isEnabled) {
+                    body.classList.add('dark-mode');
+                } else {
+                    body.classList.remove('dark-mode');
+                }
+                darkModeToggle.checked = isEnabled;
+            }
+
+            applyDarkMode(darkModeEnabled); // Apply initial state
+
+            darkModeToggle.addEventListener('change', () => {
+                const isEnabled = darkModeToggle.checked;
+                localStorage.setItem('darkModeEnabled', isEnabled);
+                applyDarkMode(isEnabled);
+            });
+
+            // --- Reset Data Logic ---
+            resetDataButton.addEventListener('click', () => {
+                resetModal.classList.remove('hidden'); // Show confirmation modal
+            });
+
+            confirmResetButton.addEventListener('click', () => {
+                localStorage.clear(); // Clear all data from localStorage
+                resetModal.classList.add('hidden'); // Hide modal
+                location.reload(); // Reload the page to apply changes
+            });
+
+            cancelResetButton.addEventListener('click', () => {
+                resetModal.classList.add('hidden'); // Hide modal
+            });
+
+            // --- Search Functionality ---
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                videoCards.forEach(card => {
+                    const title = card.dataset.title.toLowerCase();
+                    const channel = card.dataset.channel.toLowerCase();
+                    const description = card.dataset.description.toLowerCase(); // Include description in search
+
+                    if (title.includes(searchTerm) || channel.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = ''; // Show the card
+                    } else {
+                        card.style.display = 'none'; // Hide the card
+                    }
+                });
+            });
+
+
+            // --- Event Listeners ---
+            document.querySelectorAll('.video-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const videoId = card.dataset.videoId;
+                    const title = card.dataset.title;
+                    const channel = card.dataset.channel;
+                    const description = card.dataset.description;
+                    showVideoDetail(videoId, title, channel, description);
+                });
+            });
+
+            homeLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+                showVideoGrid();
+            });
+
+            settingsLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+                showSettingsPage();
+            });
+
+            backButtonVideo.addEventListener('click', showVideoGrid);
+            backButtonSettings.addEventListener('click', showVideoGrid);
+
+            // --- Initial setup for sidebar visibility on desktop ---
+            if (window.innerWidth >= 768) {
+                sidebar.classList.add('sidebar-open'); // Always open on desktop for this version
+                mainContentWrapper.style.marginLeft = '256px';
+            } else {
+                sidebar.classList.remove('sidebar-open'); // Ensure it's closed on mobile
+                mainContentWrapper.style.marginLeft = '0';
+            }
+
+            // Adjust layout on window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.add('sidebar-open');
+                    mainContentWrapper.style.marginLeft = '256px';
+                } else {
+                    sidebar.classList.remove('sidebar-open');
+                    mainContentWrapper.style.marginLeft = '0';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
