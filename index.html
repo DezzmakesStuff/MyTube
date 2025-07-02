@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyTube - Video Gallery</title>
-    <link href="[https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap](https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap)" rel="stylesheet">
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)" rel="stylesheet">
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for responsive video embedding */
         .video-container {
@@ -86,11 +86,15 @@
             color: #a0aec0;
         }
 
-
         /* Hide elements initially for the detail view and settings page */
         .hidden {
             display: none;
         }
+        /* Style for when modal is open to prevent background scrolling */
+        body.modal-open {
+            overflow: hidden;
+        }
+
 
         /* Header specific styles for Android look */
         header {
@@ -310,6 +314,7 @@
             max-width: 400px;
             width: 90%;
             text-align: center;
+            position: relative; /* For close button positioning */
         }
         body.dark-mode .modal-content {
             background-color: #2d3748;
@@ -470,9 +475,9 @@
 <body class="bg-gray-100 text-gray-900">
 
     <script type="module">
-        import { initializeApp } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js)";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js)";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js)";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global Firebase variables
         let app;
@@ -483,56 +488,91 @@
         let currentUserAvatar = null;
         let isAvatarSet = false; // New flag to track if avatar is set
 
-        // Ensure __app_id and __firebase_config are defined in the Canvas environment
+        // Ensure __app_id and __firebase_config are defined (for Canvas environment)
+        // For GitHub Pages, these will likely be undefined unless you inject them via build process.
+        // For local testing on GitHub Pages, consider temporarily hardcoding these values:
+        /*
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            // measurementId: "YOUR_MEASUREMENT_ID" // Optional
+        };
+        const appId = firebaseConfig.appId;
+        */
+        // Original dynamic loading:
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
 
-        // Initialize Firebase
-        if (Object.keys(firebaseConfig).length > 0) {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
 
-            // Listen for auth state changes
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    console.log("Firebase Auth State Changed: User is signed in.", user.uid);
-                    currentUserId = user.uid;
-                    // Try to load user profile from Firestore
-                    await loadUserProfile(currentUserId);
-                } else {
-                    console.log("Firebase Auth State Changed: No user signed in. Attempting anonymous sign-in.");
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        try {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                            console.log("Signed in with custom token.");
-                        } catch (error) {
-                            console.error("Error signing in with custom token:", error);
-                            await signInAnonymously(auth); // Fallback to anonymous
-                            console.log("Signed in anonymously after custom token failure.");
-                        }
-                    } else {
-                        await signInAnonymously(auth);
-                        console.log("Signed in anonymously.");
-                    }
-                }
-            });
-        } else {
-            console.error("Firebase config not found. Firebase will not be initialized.");
-            // Fallback for when Firebase is not available (e.g., local testing without Canvas env)
-            document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('intro-overlay').style.display = 'none';
-                document.getElementById('app-content').classList.remove('hidden');
-                document.body.style.overflow = 'auto';
-                // Simulate a logged-in state for local testing
-                currentUserId = 'local-test-user';
-                currentUsername = 'GuestUser';
-                currentUserAvatar = generateGradientIcon('G'); // Default avatar
-                isAvatarSet = true;
-                updateUserProfileDisplay();
-                renderVideoGrid();
-            });
+        // Function to hide the intro overlay and show the main app content
+        function showAppContent() {
+            document.getElementById('intro-overlay').style.display = 'none';
+            document.getElementById('app-content').classList.remove('hidden');
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+            renderVideoGrid(); // Render videos if they're static or use local data
         }
+
+        // This will run as soon as the HTML is parsed, ensuring the app is shown quickly.
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Content Loaded. Showing app content and attempting Firebase initialization.");
+            showAppContent(); // Always show the app content first
+
+            // Set default user info if Firebase isn't active yet or fails
+            currentUserId = 'guest-user';
+            currentUsername = 'Guest';
+            currentUserAvatar = generateGradientIcon('G'); // Assuming generateGradientIcon exists
+            isAvatarSet = true;
+            updateUserProfileDisplay(); // Update header with guest info
+
+            // Now, attempt Firebase initialization
+            // We check for firebaseConfig.apiKey to ensure at least a basic config exists.
+            if (Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey) {
+                try {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    console.log("Firebase initialized successfully.");
+
+                    // Listen for auth state changes *after* initialization
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            console.log("Firebase Auth State Changed: User is signed in.", user.uid);
+                            currentUserId = user.uid;
+                            // Try to load user profile from Firestore, which will update UI or direct to setup
+                            await loadUserProfile(currentUserId);
+                        } else {
+                            console.log("Firebase Auth State Changed: No user signed in. Attempting anonymous sign-in or custom token.");
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                try {
+                                    await signInWithCustomToken(auth, __initial_auth_token);
+                                    console.log("Signed in with custom token.");
+                                } catch (error) {
+                                    console.error("Error signing in with custom token:", error);
+                                    await signInAnonymously(auth); // Fallback to anonymous
+                                    console.log("Signed in anonymously after custom token failure.");
+                                }
+                            } else {
+                                await signInAnonymously(auth);
+                                console.log("Signed in anonymously.");
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error initializing Firebase:", error);
+                    console.warn("Firebase not fully operational. App will run in limited mode (guest user).");
+                    // The app content is already visible at this point.
+                    // You might display a user-friendly message on the UI here.
+                }
+            } else {
+                console.warn("Firebase config not found or incomplete. Firebase will not be initialized. Running in guest mode.");
+                // The app content is already visible and guest user is set.
+            }
+        });
+
 
         // Simple hash function for password (NOT SECURE FOR PRODUCTION)
         function simpleHash(str) {
@@ -566,27 +606,20 @@
                     if (currentUsername && !isAvatarSet) {
                         showAvatarSelectionPage();
                     } else {
-                        showHomePage(); // Go to home page after loading profile
+                        showHomePage(); // Ensure home page is shown after successful profile load
                     }
                 } else {
-                    console.log("No user profile found for UID:", uid, "Directing to avatar setup.");
-                    // This happens for newly created anonymous users that haven't registered
-                    // We need to wait for MyMoogle signup to get username
-                    // If no profile, and MyMoogle hasn't registered a username for this UID, show login
-                    // Otherwise, if a UID exists and it's a fresh sign-in, it means they are new to MyMoogle
+                    console.log("No user profile found for UID:", uid, "Checking MyMoogle signup status.");
                     if (auth && auth.currentUser && auth.currentUser.isAnonymous) {
-                         // Check if this anonymous user has a username registered in public/users
-                         const q = query(collection(db, `artifacts/${appId}/public/data/users`), where("uid", "==", auth.currentUser.uid));
-                         const querySnapshot = await getDocs(q);
-                         if (querySnapshot.empty) {
-                             // This anonymous user hasn't created a MyMoogle account yet
-                             showMyMoogleModal();
-                         } else {
-                             // This anonymous user has a MyMoogle username but no profile data yet
-                             const publicUserData = querySnapshot.docs[0].data();
-                             currentUsername = publicUserData.username;
-                             showAvatarSelectionPage();
-                         }
+                        const q = query(collection(db, `artifacts/${appId}/public/data/users`), where("uid", "==", auth.currentUser.uid));
+                        const querySnapshot = await getDocs(q);
+                        if (querySnapshot.empty) {
+                            showMyMoogleModal(); // Anonymous user, no public profile yet
+                        } else {
+                            const publicUserData = querySnapshot.docs[0].data();
+                            currentUsername = publicUserData.username;
+                            showAvatarSelectionPage(); // Public profile found, but personal profile incomplete
+                        }
                     } else {
                         showMyMoogleModal(); // Fallback to login if somehow no user or profile
                     }
@@ -629,14 +662,11 @@
                 return false;
             }
             try {
-                // Query directly by document ID (username) for efficiency
                 const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, username);
                 const docSnap = await getDoc(userDocRef);
-                return docSnap.exists(); // Returns true if username exists
+                return docSnap.exists();
             } catch (error) {
                 console.error("Error checking username existence:", error);
-                // On error, better to assume it exists to prevent creating duplicate usernames
-                // This is a safety measure; in real app, you'd log and alert for actual issue
                 return true;
             }
         }
@@ -648,19 +678,17 @@
                 return;
             }
             try {
-                // Store in a public collection for username/password lookup
-                // Use username as doc ID for easy direct lookup
                 const publicUserDocRef = doc(db, `artifacts/${appId}/public/data/users`, username);
                 await setDoc(publicUserDocRef, {
                     uid: uid,
                     username: username,
-                    passwordHash: hashedPassword, // Store hash, not plain password
+                    passwordHash: hashedPassword,
                     createdAt: new Date()
                 });
                 console.log("Public user record created.");
             } catch (error) {
                 console.error("Error adding new public user:", error);
-                throw error; // Re-throw to be caught by the calling function
+                throw error;
             }
         }
 
@@ -677,7 +705,7 @@
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
                     if (userData.passwordHash === hashedPassword) {
-                         return userData.uid; // Return Firebase UID associated with this username
+                        return userData.uid;
                     }
                 }
                 return null;
@@ -686,7 +714,7 @@
                 return null;
             }
         }
-        
+
         // Expose functions to global scope for HTML script to use
         window.loadUserProfile = loadUserProfile;
         window.saveUserProfile = saveUserProfile;
@@ -694,12 +722,347 @@
         window.addNewPublicUser = addNewPublicUser;
         window.getUserByUsernamePassword = getUserByUsernamePassword;
         window.simpleHash = simpleHash;
-        window.currentUserId = currentUserId; // Initial value, will be updated by onAuthStateChanged
+        window.currentUserId = currentUserId;
         window.currentUsername = currentUsername;
         window.currentUserAvatar = currentUserAvatar;
         window.isAvatarSet = isAvatarSet;
-        window.auth = auth; // Expose auth for direct sign-in calls
-        window.signOut = signOut; // Expose signOut function
+        window.auth = auth;
+        window.signOut = signOut;
+
+        // Dummy functions for pages and UI updates (these are necessary for the main app to function)
+        function updateUserProfileDisplay() {
+            const userProfileDisplay = document.getElementById('user-profile-display');
+            const signInButton = document.getElementById('signin-button');
+            const userAvatarElement = document.getElementById('user-avatar');
+            const usernameElement = document.getElementById('user-username');
+
+            if (currentUsername) {
+                userProfileDisplay.classList.remove('hidden');
+                signInButton.classList.add('hidden');
+                usernameElement.textContent = currentUsername;
+                if (currentUserAvatar && currentUserAvatar.startsWith('http')) { // Check if it's an image URL
+                    userAvatarElement.src = currentUserAvatar;
+                    userAvatarElement.innerHTML = ''; // Clear SVG if image is set
+                } else {
+                    // Fallback to text avatar (SVG) if no image URL or if it's the SVG string
+                    userAvatarElement.src = ''; // Ensure src is empty for SVG
+                    userAvatarElement.innerHTML = currentUserAvatar || generateGradientIcon(currentUsername.charAt(0).toUpperCase());
+                }
+            } else {
+                userProfileDisplay.classList.add('hidden');
+                signInButton.classList.remove('hidden');
+            }
+        }
+
+        function renderVideoGrid() {
+            console.log("Rendering video grid (placeholder).");
+            // Your actual video rendering logic would go here.
+            // This example includes static video cards in the HTML.
+            // If you have dynamic video data, you'd fetch and display it here.
+        }
+
+        function showHomePage() {
+            console.log("Showing home page.");
+            // Hide other pages, show home page
+            document.getElementById('home-page').classList.remove('hidden');
+            document.getElementById('avatar-selection-page').classList.add('hidden');
+            document.getElementById('my-moogle-modal').classList.add('hidden'); // Ensure modal is hidden
+            document.body.classList.remove('modal-open'); // Remove modal overlay class
+        }
+
+        function showAvatarSelectionPage() {
+            console.log("Showing avatar selection page.");
+            // Hide other pages, show avatar selection
+            document.getElementById('home-page').classList.add('hidden');
+            document.getElementById('avatar-selection-page').classList.remove('hidden');
+            document.getElementById('my-moogle-modal').classList.add('hidden'); // Ensure modal is hidden
+            document.body.classList.remove('modal-open'); // Remove modal overlay class
+        }
+
+        function showMyMoogleModal() {
+            console.log("Showing MyMoogle modal.");
+            const myMoogleModal = document.getElementById('my-moogle-modal');
+            if (myMoogleModal) {
+                myMoogleModal.classList.remove('hidden');
+                document.body.classList.add('modal-open'); // Add class to body for overlay styling
+            }
+            // Ensure other pages are hidden when modal is shown
+            document.getElementById('home-page').classList.add('hidden');
+            document.getElementById('avatar-selection-page').classList.add('hidden');
+        }
+
+        function generateGradientIcon(letter) {
+            // Simple SVG gradient icon for avatar placeholder
+            const colors = [
+                "#ef4444", // Red
+                "#f97316", // Orange
+                "#eab308", // Yellow
+                "#22c55e", // Green
+                "#0ea5e9", // Blue
+                "#6366f1", // Indigo
+                "#a855f7"  // Violet
+            ];
+            const color1 = colors[Math.floor(Math.random() * colors.length)];
+            const color2 = colors[Math.floor(Math.random() * colors.length)];
+
+            return `
+                <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gradient-${letter}-${Math.random().toString(36).substr(2, 9)}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="${color1}" />
+                            <stop offset="100%" stop-color="${color2}" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" rx="50" fill="url(#gradient-${letter}-${Math.random().toString(36).substr(2, 9)})"/>
+                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="50" font-weight="bold" fill="white" font-family="'Inter', sans-serif">
+                        ${letter}
+                    </text>
+                </svg>
+            `;
+        }
+
+        // Event Listeners for UI interaction (add these if you haven't already)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hamburger menu toggle
+            const hamburgerButton = document.getElementById('hamburger-button');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (hamburgerButton && sidebar && sidebarOverlay) {
+                hamburgerButton.addEventListener('click', () => {
+                    sidebar.classList.toggle('sidebar-open');
+                    sidebarOverlay.classList.toggle('active');
+                });
+
+                sidebarOverlay.addEventListener('click', () => {
+                    sidebar.classList.remove('sidebar-open');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+
+            // Dark mode toggle
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            if (darkModeToggle) {
+                // Load saved preference
+                const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                    darkModeToggle.checked = true;
+                }
+
+                darkModeToggle.addEventListener('change', () => {
+                    if (darkModeToggle.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('darkMode', 'true');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('darkMode', 'false');
+                    }
+                });
+            }
+
+            // Dummy event listeners for buttons that call the placeholder functions
+            const signInButton = document.getElementById('signin-button');
+            if (signInButton) {
+                signInButton.addEventListener('click', showMyMoogleModal);
+            }
+
+            const closeModalButton = document.getElementById('close-modal');
+            if (closeModalButton) {
+                closeModalButton.addEventListener('click', showHomePage); // Close modal goes to home
+            }
+
+            // MyMoogle modal tab switching
+            const showSignupLink = document.getElementById('show-signup');
+            const showLoginLink = document.getElementById('show-login');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+
+            if (showSignupLink && showLoginLink && loginForm && signupForm) {
+                showSignupLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loginForm.classList.add('hidden');
+                    signupForm.classList.remove('hidden');
+                });
+                showLoginLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    signupForm.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+                });
+            }
+
+            // Simulate MyMoogle login/signup interactions (replace with actual Firebase Auth later)
+            const loginButton = document.getElementById('login-button');
+            const signupButton = document.getElementById('signup-button');
+            const modalMessage = document.getElementById('modal-message');
+
+            if (loginButton) {
+                loginButton.addEventListener('click', async () => {
+                    const username = document.getElementById('login-username').value;
+                    const password = document.getElementById('login-password').value;
+                    if (!username || !password) {
+                        modalMessage.textContent = "Please enter username and password.";
+                        return;
+                    }
+                    const hashedPassword = simpleHash(password);
+                    const uid = await getUserByUsernamePassword(username, hashedPassword);
+                    if (uid) {
+                        console.log(`User ${username} logged in with UID: ${uid}`);
+                        // In a real app, you'd use Firebase signInWithEmailAndPassword or custom token sign-in here
+                        // For now, we'll just simulate by setting global user info
+                        currentUserId = uid;
+                        currentUsername = username;
+                        currentUserAvatar = generateGradientIcon(username.charAt(0).toUpperCase()); // Generate a temporary avatar
+                        isAvatarSet = true;
+                        updateUserProfileDisplay();
+                        showHomePage();
+                        modalMessage.textContent = "";
+                    } else {
+                        modalMessage.textContent = "Invalid username or password.";
+                    }
+                });
+            }
+
+            if (signupButton) {
+                signupButton.addEventListener('click', async () => {
+                    const username = document.getElementById('signup-username').value;
+                    const password = document.getElementById('signup-password').value;
+                    const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+                    if (!username || !password || !confirmPassword) {
+                        modalMessage.textContent = "Please fill all fields.";
+                        return;
+                    }
+                    if (password !== confirmPassword) {
+                        modalMessage.textContent = "Passwords do not match.";
+                        return;
+                    }
+                    if (password.length < 6) {
+                        modalMessage.textContent = "Password must be at least 6 characters long.";
+                        return;
+                    }
+
+                    // Check if username exists using Firestore (if Firebase is initialized)
+                    if (db && await checkIfUsernameExists(username)) {
+                        modalMessage.textContent = "Username already taken.";
+                        return;
+                    }
+
+                    const hashedPassword = simpleHash(password);
+                    // Simulate creating a new Firebase user ID (or use Firebase Auth createUser here)
+                    const newUid = `mymoogle-${Date.now()}`; // Just a dummy UID
+
+                    try {
+                        // Attempt to add new public user
+                        await addNewPublicUser(newUid, username, hashedPassword);
+
+                        // Simulate Firebase custom token sign-in after public user creation
+                        // In a real app, you'd call a backend function to mint a custom token for this new user
+                        // and then sign in with it using signInWithCustomToken(auth, token);
+                        // For now, we'll just set the current user locally.
+                        currentUserId = newUid;
+                        currentUsername = username;
+                        currentUserAvatar = generateGradientIcon(username.charAt(0).toUpperCase());
+                        isAvatarSet = false; // Avatar needs to be set after signup
+                        updateUserProfileDisplay();
+                        modalMessage.textContent = "";
+                        showAvatarSelectionPage(); // Direct new user to avatar selection
+                    } catch (error) {
+                        console.error("Error during signup:", error);
+                        modalMessage.textContent = `Signup failed: ${error.message || 'Unknown error'}`;
+                    }
+                });
+            }
+
+            // Save Avatar button
+            const saveAvatarButton = document.getElementById('save-avatar-button');
+            if (saveAvatarButton) {
+                saveAvatarButton.addEventListener('click', async () => {
+                    if (currentUserId && currentUsername && currentUserAvatar) {
+                        await saveUserProfile(currentUserId, currentUsername, currentUserAvatar);
+                    } else {
+                        console.warn("Cannot save avatar: User or avatar data missing.");
+                        showHomePage(); // Fallback to home even if not saved
+                    }
+                });
+            }
+
+            // Avatar options in settings/selection page
+            document.querySelectorAll('.avatar-option, .avatar-option-settings').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const letter = e.target.dataset.avatar || e.target.textContent.trim();
+                    const avatarSvg = generateGradientIcon(letter);
+                    const previewElement = e.target.closest('#avatar-selection-page') ? document.getElementById('avatar-preview') : document.getElementById('settings-avatar-preview');
+                    if (previewElement) {
+                        previewElement.innerHTML = avatarSvg;
+                        currentUserAvatar = avatarSvg; // Store the SVG string directly
+                    }
+                });
+            });
+
+            // Save settings button (for username and avatar)
+            const saveSettingsButton = document.getElementById('save-settings-button');
+            if (saveSettingsButton) {
+                saveSettingsButton.addEventListener('click', async () => {
+                    const newUsername = document.getElementById('username-input').value;
+                    // For simplicity, we assume currentUserAvatar is updated by clicking an avatar option
+                    if (currentUserId && newUsername && currentUserAvatar) {
+                        await saveUserProfile(currentUserId, newUsername, currentUserAvatar);
+                        alert("Settings saved!");
+                        showHomePage(); // Go back to home after saving
+                    } else {
+                        alert("Please provide a username and select an avatar.");
+                    }
+                });
+            }
+
+            // Sign Out button
+            const signoutButton = document.getElementById('signout-button');
+            if (signoutButton) {
+                signoutButton.addEventListener('click', async () => {
+                    if (auth) {
+                        try {
+                            await signOut(auth);
+                            console.log("User signed out from Firebase.");
+                        } catch (error) {
+                            console.error("Error signing out:", error);
+                        }
+                    }
+                    // Reset local user state and update UI
+                    currentUserId = null;
+                    currentUsername = null;
+                    currentUserAvatar = null;
+                    isAvatarSet = false;
+                    updateUserProfileDisplay();
+                    showMyMoogleModal(); // Direct to login after sign out
+                    alert("You have been signed out.");
+                });
+            }
+
+            // Navigation links
+            const homeLink = document.getElementById('home-link');
+            if (homeLink) {
+                homeLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showHomePage();
+                });
+            }
+            const settingsLink = document.getElementById('settings-link'); // Assuming you add a settings link in sidebar
+            if (settingsLink) {
+                settingsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('home-page').classList.add('hidden');
+                    document.getElementById('settings-page').classList.remove('hidden');
+                    // Populate settings inputs with current user data
+                    document.getElementById('username-input').value = currentUsername || '';
+                    const settingsAvatarPreview = document.getElementById('settings-avatar-preview');
+                    if (settingsAvatarPreview) {
+                        settingsAvatarPreview.innerHTML = currentUserAvatar || generateGradientIcon(currentUsername ? currentUsername.charAt(0).toUpperCase() : 'G');
+                    }
+                });
+            }
+        });
+
     </script>
 
     <div id="intro-overlay">
@@ -716,7 +1079,7 @@
         <header class="bg-white shadow-sm px-4 md:px-6 mb-6 rounded-b-lg flex items-center justify-between sticky top-0 z-50">
             <div class="flex items-center">
                 <button id="hamburger-button" class="md:hidden mr-3">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
@@ -725,7 +1088,7 @@
 
             <div class="relative w-1/3 max-w-lg hidden sm:block">
                 <input type="text" id="search-input" placeholder="Search..." class="w-full p-2 pl-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </div>
@@ -735,7 +1098,7 @@
                     Sign In
                 </button>
                 <div id="user-profile-display" class="hidden">
-                    <img id="user-avatar" src="" alt="User Avatar">
+                    <img id="user-avatar" src="" alt="User Avatar" class="w-10 h-10 rounded-full object-cover">
                     <span id="user-username"></span>
                 </div>
             </div>
@@ -749,7 +1112,7 @@
                     <ul>
                         <li class="mb-2">
                             <a href="#" id="home-link" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l-7 7m7-7v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                 </svg>
                                 Home
@@ -757,40 +1120,16 @@
                         </li>
                         <li class="mb-2">
                             <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
                                 Trending
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 0 00-2 2v2m14 0h2m-2 0h-2" />
-                                </svg>
-                                Subscriptions
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                </svg>
-                                Library
-                            </a>
-                        </li>
-                        <li class="mb-2" id="set-avatar-link">
-                            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0A8.966 8.966 0 0 1 12 20.25a8.966 8.966 0 0 1-5.982-2.525M12 12.75a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
-                                </svg>
-                                Set Avatar
-                            </a>
-                        </li>
-                        <li class="mb-2">
                             <a href="#" id="settings-link" class="flex items-center p-3 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.562.343 1.25-.01 1.724-1.065z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 Settings
@@ -800,835 +1139,141 @@
                 </nav>
             </aside>
 
-            <div class="flex-1 p-4">
-                <section id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
-                         data-video-id="TolWZ965kec"
-                         data-title="keys"
-                         data-channel="Charlles"
-                         data-description="Lyrics: (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock. (Why'd you lock me out?) (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock (Why'd you lock me out?)">
-                        <div class="video-container mb-4">
-                            <img src="[http://img.youtube.com/vi/TolWZ965kec/maxresdefault.jpg](http://img.youtube.com/vi/TolWZ965kec/maxresdefault.jpg)" alt="Video Thumbnail: keys">
+            <main class="flex-1 p-4" id="home-page">
+                <h2 class="text-2xl font-bold mb-4">Recommended Videos</h2>
+                <div id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
+                        <div class="video-container">
+                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+1" alt="Video Thumbnail 1">
+                            </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">AI-Generated Content Explained</h3>
+                            <p class="text-gray-600 text-sm dark:text-gray-400">Tech Insights • 2.5M views • 3 days ago</p>
                         </div>
-                        <h2 class="text-lg font-semibold mb-2">keys</h2>
-                        <p class="text-sm text-gray-600">Charlles</p>
                     </div>
-
-                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
-                         data-video-id="KDpw8eW1d4s"
-                         data-title="Incredibox V9 Bonus Tracks - BDB (Visualizer)"
-                         data-channel="Incredibox"
-                         data-description="BDB, the third single from the V9 Bonus Tracks EP! Pump it up and chill. Stream it now!">
-                        <div class="video-container mb-4">
-                            <img src="[http://img.youtube.com/vi/KDpw8eW1d4s/maxresdefault.jpg](http://img.youtube.com/vi/KDpw8eW1d4s/maxresdefault.jpg)" alt="Video Thumbnail: Incredibox V9 Bonus Tracks - BDB (Visualizer)">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
+                        <div class="video-container">
+                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+2" alt="Video Thumbnail 2">
                         </div>
-                        <h2 class="text-lg font-semibold mb-2">Incredibox V9 Bonus Tracks - BDB (Visualizer)</h2>
-                        <p class="text-sm text-gray-600">Incredibox</p>
-                    </div>
-
-                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
-                         data-video-id="Cs3lYiFEOU0"
-                         data-title="How I Made the Ultimate 'Portable' Wii"
-                         data-channel="Shank Mods"
-                         data-description="I've completed yet another childhood dream of mine: owning and making a portable Wii console! This thing was really fun to make and use.">
-                        <div class="video-container mb-4">
-                            <img src="[http://img.youtube.com/vi/Cs3lYiFEOU0/maxresdefault.jpg](http://img.youtube.com/vi/Cs3lYiFEOU0/maxresdefault.jpg)" alt="Video Thumbnail: How I Made the Ultimate 'Portable' Wii">
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">The Future of Web Development</h3>
+                            <p class="text-gray-600 text-sm dark:text-gray-400">Code Innovators • 1.8M views • 1 week ago</p>
                         </div>
-                        <h2 class="text-lg font-semibold mb-2">How I Made the Ultimate "Portable" Wii</h2>
-                        <p class="text-sm text-gray-600">Shank Mods</p>
                     </div>
-
-                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
-                         data-video-id="R5jZRV2D-rM"
-                         data-title="Playing a Game Console Which Doesn’t Exist"
-                         data-channel="James Channel"
-                         data-description="What if, instead of just miniaturizing consoles, your next DIY project was constructing one from scratch? The PICO-8 is a digital 'console' designed for ultra-compact, retro-style gaming, with the slight caveat that it doesn't actually exist physically.">
-                        <div class="video-container mb-4">
-                            <img src="[http://img.youtube.com/vi/R5jZRV2D-rM/maxresdefault.jpg](http://img.youtube.com/vi/R5jZRV2D-rM/maxresdefault.jpg)" alt="Video Thumbnail: Playing a Game Console Which Doesn’t Exist">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
+                        <div class="video-container">
+                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+3" alt="Video Thumbnail 3">
                         </div>
-                        <h2 class="text-lg font-semibold mb-2">Playing a Game Console Which Doesn’t Exist</h2>
-                        <p class="text-sm text-gray-600">James Channel</p>
-                    </div>
-
-                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
-                         data-video-id="7avqbIE1eAM"
-                         data-title="Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]"
-                         data-channel="TetraBitGaming"
-                         data-description="Top 10s, Lost Bits, Mystery Bits, Bit Lift.. ALL THE BITS ARE HERE!">
-                        <div class="video-container mb-4">
-                            <img src="[http://img.youtube.com/vi/7avqbIE1eAM/maxresdefault.jpg](http://img.youtube.com/vi/7avqbIE1eAM/maxresdefault.jpg)" alt="Video Thumbnail: Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]">
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">Creative Design Trends 2025</h3>
+                            <p class="text-gray-600 text-sm dark:text-gray-400">Design Studio • 900K views • 2 days ago</p>
                         </div>
-                        <h2 class="text-lg font-semibold mb-2">Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]</h2>
-                        <p class="text-sm text-gray-600">TetraBitGaming</p>
                     </div>
-
-                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
-                         data-video-id="nJ1jjDzlJgM"
-                         data-title="ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep"
-                         data-channel="Cosmo Whispers ASMR"
-                         data-description="WARNING!: There are some mild flashing lights towards the end of this video! If you are sensitive to lights please watch with caution! My goal is to help recreate that feeling for some of you!">
-                        <div class="video-container mb-4">
-                            <img src="[http://img.youtube.com/vi/nJ1jjDzlJgM/maxresdefault.jpg](http://img.youtube.com/vi/nJ1jjDzlJgM/maxresdefault.jpg)" alt="Video Thumbnail: ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden dark:bg-gray-800">
+                        <div class="video-container">
+                            <img src="https://via.placeholder.com/320x180?text=MyTube+Video+4" alt="Video Thumbnail 4">
                         </div>
-                        <h2 class="text-lg font-semibold mb-2">ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep</h2>
-                        <p class="text-sm text-gray-600">Cosmo Whispers ASMR</p>
-                    </div>
-
-                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
-                         data-video-id="UxGQoP3wPxM"
-                         data-title="Can I get Windows 98 running on my CAR?"
-                         data-channel="Kolarias"
-                         data-description="With Windows ME only needing 8MB of RAM to function, it's time we take a look at Windows 98. While ME and 98 may look similar, 98 is a lot more lighter weight than ME.">
-                        <div class="video-container mb-4">
-                            <img src="[http://img.youtube.com/vi/UxGQoP3wPxM/maxresdefault.jpg](http://img.youtube.com/vi/UxGQoP3wPxM/maxresdefault.jpg)" alt="Video Thumbnail: Can I get Windows 98 running on my CAR?">
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg mb-1 text-gray-900 dark:text-gray-100">Mastering Prompt Engineering</h3>
+                            <p class="text-gray-600 text-sm dark:text-gray-400">AI Gurus • 3.1M views • 4 days ago</p>
                         </div>
-                        <h2 class="text-lg font-semibold mb-2">Can I get Windows 98 running on my CAR?</h2>
-                        <p class="text-sm text-gray-600">Kolarias</p>
                     </div>
-                </section>
-
-                <section id="video-detail" class="hidden bg-white rounded-lg shadow-md p-6">
-                    <button id="back-button-video" class="mb-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out flex items-center">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to Home
-                    </button>
-                    <div class="video-container mb-6">
-                        <iframe id="detail-video-player" src="" allowfullscreen></iframe>
                     </div>
-                    <h2 id="detail-video-title" class="text-2xl font-bold mb-2"></h2>
-                    <p id="detail-video-channel" class="text-lg text-gray-700 mb-4"></p>
-                    <p id="detail-video-description" class="text-base text-gray-800"></p>
-                </section>
+            </main>
 
-                <section id="settings-page" class="hidden bg-white rounded-lg shadow-md p-6">
-                    <button id="back-button-settings" class="mb-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out flex items-center">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to Home
-                    </button>
-                    <h2 class="text-2xl font-bold mb-6">Settings</h2>
-
-                    <div class="mb-6 flex items-center justify-between">
-                        <label for="autoplay-toggle" class="text-lg">Autoplay Videos</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="autoplay-toggle">
-                            <span class="slider"></span>
-                        </label>
+            <div id="avatar-selection-page" class="hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center dark:text-gray-100">Choose Your Avatar</h2>
+                <div id="avatar-preview" class="mx-auto"></div>
+                <div class="flex flex-wrap justify-center gap-4 mt-6">
+                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="A">A</button>
+                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="B">B</button>
+                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="C">C</button>
+                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="D">D</button>
+                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="E">E</button>
+                    <button class="avatar-option w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="F">F</button>
                     </div>
-
-                    <div class="mb-6 flex items-center justify-between">
-                        <label for="dark-mode-toggle" class="text-lg">Dark Mode</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="dark-mode-toggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <button id="reset-data-button" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out mt-4">
-                        Reset All Data
-                    </button>
-                </section>
-
-                <section id="avatar-selection-page" class="hidden bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-2xl font-bold mb-6">Set Your Profile Avatar</h2>
-                    <div id="avatar-preview" class="mb-6"></div>
-
-                    <div class="flex flex-col items-center space-y-4 mb-6">
-                        <input type="file" id="avatar-upload-input" accept="image/*" class="hidden">
-                        <button id="upload-avatar-button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out">
-                            Upload Image
-                        </button>
-                        <button id="generate-avatar-button" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out">
-                            Generate Random Icon
-                        </button>
-                    </div>
-                    <button id="save-avatar-button" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-full shadow-md transition duration-300 ease-in-out mt-4">
-                        Save Avatar
-                    </button>
-                </section>
+                <button id="save-avatar-button" class="mt-8 bg-red-600 text-white py-3 px-6 rounded-full text-lg font-semibold shadow-md hover:bg-red-700 transition duration-300 ease-in-out">
+                    Save Avatar
+                </button>
             </div>
+
+            <div id="my-moogle-modal" class="modal-overlay hidden">
+                <div class="modal-content dark:bg-gray-800">
+                    <h3 class="text-xl font-bold mb-4 dark:text-gray-100">MyMoogle Account</h3>
+                    <div id="login-form">
+                        <input type="text" id="login-username" placeholder="Username" class="w-full p-2 mb-3 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                        <input type="password" id="login-password" placeholder="Password" class="w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                        <button id="login-button" class="w-full bg-red-600 text-white py-2 rounded-md font-semibold hover:bg-red-700">Login</button>
+                        <p class="mt-4 text-sm text-gray-700 dark:text-gray-300">Don't have an account? <a href="#" id="show-signup" class="text-red-600 hover:underline">Sign Up</a></p>
+                    </div>
+                    <div id="signup-form" class="hidden">
+                        <input type="text" id="signup-username" placeholder="Choose a Username" class="w-full p-2 mb-3 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                        <input type="password" id="signup-password" placeholder="Create Password" class="w-full p-2 mb-3 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                        <input type="password" id="signup-confirm-password" placeholder="Confirm Password" class="w-full p-2 mb-4 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                        <button id="signup-button" class="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700">Sign Up</button>
+                        <p class="mt-4 text-sm text-gray-700 dark:text-gray-300">Already have an account? <a href="#" id="show-login" class="text-blue-600 hover:underline">Login</a></p>
+                    </div>
+                    <p id="modal-message" class="text-sm text-red-500 mt-3"></p>
+                    <button id="close-modal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+
         </div>
 
         <button id="fab-upload">
-            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
         </button>
-
-        <!-- MyMoogle Sign In/Sign Up Modal -->
-        <div id="mymoogle-modal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <h3 class="text-xl font-bold mb-4" id="mymoogle-modal-title">Sign In to MyMoogle</h3>
-                <input type="text" id="mymoogle-username-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Username">
-                <input type="password" id="mymoogle-password-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Password">
-
-                <div class="flex items-center justify-center mb-4">
-                    <label for="is-new-user-toggle" class="mr-2 text-gray-700">New User (Sign Up)</label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="is-new-user-toggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="flex justify-center space-x-4">
-                    <button id="cancel-mymoogle" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Cancel
-                    </button>
-                    <button id="submit-mymoogle" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Sign In
-                    </button>
-                </div>
-                <p id="mymoogle-error-message" class="text-red-500 text-sm mt-4 hidden"></p>
-            </div>
-        </div>
-
-        <div id="reset-modal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <h3 class="text-xl font-bold mb-4">Confirm Reset</h3>
-                <p class="mb-6">Are you sure you want to reset all your data? This action cannot be undone.</p>
-                <div class="flex justify-center space-x-4">
-                    <button id="cancel-reset" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Cancel
-                    </button>
-                    <button id="confirm-reset" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Reset
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="upload-video-modal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <h3 class="text-xl font-bold mb-4">Upload New Video (YouTube Link)</h3>
-                <input type="text" id="video-url-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Enter YouTube Video URL">
-                <input type="text" id="video-title-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Video Title (Optional, will attempt to fetch)">
-                <input type="text" id="video-channel-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Channel Name (Optional, will attempt to fetch)">
-                <textarea id="video-description-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Description (Optional, will attempt to fetch)"></textarea>
-
-                <div class="flex justify-center space-x-4">
-                    <button id="cancel-upload" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Cancel
-                    </button>
-                    <button id="submit-upload" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Add Video
-                    </button>
-                </div>
-                <p id="upload-error-message" class="text-red-500 text-sm mt-4 hidden"></p>
-            </div>
-        </div>
-
-        <footer class="bg-gray-800 text-white p-4 mt-6 text-center rounded-t-lg">
-            <p>© 2025 MyTube. All rights reserved.</p>
-        </footer>
     </div>
 
-    <script type="module">
-        // Import Firebase modules
-        import { getAuth, signInAnonymously, signOut } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js)";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "[https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js](https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js)";
+    <div id="video-detail-page" class="hidden">
+        <h2 class="text-2xl font-bold text-center mt-8 dark:text-gray-100">Video Detail Page (Coming Soon!)</h2>
+        <p class="text-center text-gray-600 dark:text-gray-400">This page would show a single video, comments, and related videos.</p>
+    </div>
 
-        // Global Firebase variables (initialized in the head script)
-        const db = window.db;
-        const auth = window.auth;
-        let currentUserId = window.currentUserId;
-        let currentUsername = window.currentUsername;
-        let currentUserAvatar = window.currentUserAvatar;
-        let isAvatarSet = window.isAvatarSet; // Get initial state from global
-        const simpleHash = window.simpleHash;
-        const loadUserProfile = window.loadUserProfile;
-        const saveUserProfile = window.saveUserProfile;
-        const checkIfUsernameExists = window.checkIfUsernameExists;
-        const addNewPublicUser = window.addNewPublicUser;
-        const getUserByUsernamePassword = window.getUserByUsernamePassword;
+    <div id="settings-page" class="hidden">
+        <div class="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md mt-8 dark:bg-gray-800">
+            <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Settings</h2>
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const body = document.body;
-            const sidebar = document.getElementById('sidebar');
-            const mainContentWrapper = document.getElementById('main-content-wrapper');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            <div class="flex items-center justify-between mb-4">
+                <label for="dark-mode-toggle" class="text-lg font-medium text-gray-700 dark:text-gray-300">Dark Mode</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dark-mode-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
 
-            const videoGridSection = document.getElementById('video-grid');
-            const videoDetailSection = document.getElementById('video-detail');
-            const detailVideoPlayer = document.getElementById('detail-video-player');
-            const detailVideoTitle = document.getElementById('detail-video-title');
-            const detailVideoChannel = document.getElementById('detail-video-channel');
-            const detailVideoDescription = document.getElementById('detail-video-description');
+            <div class="mb-6">
+                <label for="username-input" class="block text-lg font-medium text-gray-700 mb-2 dark:text-gray-300">Username</label>
+                <input type="text" id="username-input" class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="Your username">
+            </div>
 
-            const homeLink = document.getElementById('home-link');
-            const settingsLink = document.getElementById('settings-link');
-            const settingsPage = document.getElementById('settings-page');
-            const backButtonVideo = document.getElementById('back-button-video');
-            const backButtonSettings = document.getElementById('back-button-settings');
-
-            const autoplayToggle = document.getElementById('autoplay-toggle');
-            const darkModeToggle = document.getElementById('dark-mode-toggle');
-            const resetDataButton = document.getElementById('reset-data-button');
-            const resetModal = document.getElementById('reset-modal');
-            const confirmResetButton = document.getElementById('confirm-reset');
-            const cancelResetButton = document.getElementById('cancel-reset');
-
-            const fabUploadButton = document.getElementById('fab-upload');
-            const uploadVideoModal = document.getElementById('upload-video-modal');
-            const videoUrlInput = document.getElementById('video-url-input');
-            const videoTitleInput = document.getElementById('video-title-input');
-            const videoChannelInput = document.getElementById('video-channel-input');
-            const videoDescriptionInput = document.getElementById('video-description-input');
-            const submitUploadButton = document.getElementById('submit-upload');
-            const cancelUploadButton = document.getElementById('cancel-upload');
-            const uploadErrorMessage = document.getElementById('upload-error-message');
-
-            const introOverlay = document.getElementById('intro-overlay');
-            const introSquare = document.getElementById('intro-square');
-            const introPlayButton = document.getElementById('intro-play-button');
-            const introMouse = document.getElementById('intro-mouse');
-            const introLogoText = document.getElementById('intro-logo-text');
-            const appContent = document.getElementById('app-content');
-
-            const hamburgerButton = document.getElementById('hamburger-button');
-
-            // NEW: MyMoogle Login/Signup elements
-            const signInButton = document.getElementById('signin-button');
-            const userProfileDisplay = document.getElementById('user-profile-display');
-            const userAvatar = document.getElementById('user-avatar');
-            const userUsername = document.getElementById('user-username');
-            const mymoogleModal = document.getElementById('mymoogle-modal');
-            const mymoogleModalTitle = document.getElementById('mymoogle-modal-title');
-            const mymoogleUsernameInput = document.getElementById('mymoogle-username-input');
-            const mymooglePasswordInput = document.getElementById('mymoogle-password-input');
-            const isNewUserToggle = document.getElementById('is-new-user-toggle');
-            const submitMymoogleButton = document.getElementById('submit-mymoogle');
-            const cancelMymoogleButton = document.getElementById('cancel-mymoogle');
-            const mymoogleErrorMessage = document.getElementById('mymoogle-error-message');
-
-            // NEW: Avatar Selection elements
-            const avatarSelectionPage = document.getElementById('avatar-selection-page');
-            const avatarPreview = document.getElementById('avatar-preview');
-            const uploadAvatarInput = document.getElementById('avatar-upload-input');
-            const uploadAvatarButton = document.getElementById('upload-avatar-button');
-            const generateAvatarButton = document.getElementById('generate-avatar-button');
-            const saveAvatarButton = document.getElementById('save-avatar-button');
-            const setAvatarLink = document.getElementById('set-avatar-link'); // New sidebar link
-
-            // --- Intro Animation Logic ---
-            function runIntroAnimation() {
-                setTimeout(() => {
-                    introSquare.style.transform = 'scale(0.8)';
-                    introSquare.style.borderRadius = '50%';
-                    introPlayButton.style.opacity = '1';
-                }, 500);
-
-                setTimeout(() => {
-                    const squareRect = introSquare.getBoundingClientRect();
-                    const targetX = squareRect.left + squareRect.width / 2;
-                    const targetY = squareRect.top + squareRect.height / 2;
-
-                    introMouse.style.opacity = '1';
-                    introMouse.style.left = `${targetX}px`;
-                    introMouse.style.top = `${targetY}px`;
-                }, 1200); // Mouse appears and moves towards square
-
-                setTimeout(() => {
-                    introMouse.classList.add('clicking');
-                }, 1700); // Mouse clicks (scales down)
-
-                setTimeout(() => {
-                    introMouse.classList.remove('clicking');
-                    introMouse.style.opacity = '0'; // Mouse disappears
-                    introSquare.style.opacity = '0'; // Square disappears
-                    introSquare.style.transform = 'scale(0)';
-                }, 2000);
-
-                setTimeout(() => {
-                    introLogoText.classList.add('show-logo-text'); // Show MyTube text
-                }, 2300);
-
-                setTimeout(() => {
-                    introOverlay.style.opacity = '0'; // Fade out overlay
-                    introOverlay.style.pointerEvents = 'none'; // Disable pointer events
-                    appContent.classList.remove('hidden'); // Show main content
-                    body.style.overflow = 'auto'; // Re-enable scrollbar
-                    checkUserSession(); // Check user session after intro
-                }, 3000);
-            }
-
-            // --- User Session & UI Update ---
-            async function checkUserSession() {
-                if (auth && auth.currentUser) {
-                    currentUserId = auth.currentUser.uid;
-                    await loadUserProfile(currentUserId);
-                } else {
-                    showMyMoogleModal(); // Show login if not authenticated
-                }
-            }
-
-            function updateUserProfileDisplay() {
-                if (currentUsername && currentUserAvatar) {
-                    signInButton.classList.add('hidden');
-                    userProfileDisplay.classList.remove('hidden');
-                    userAvatar.src = currentUserAvatar;
-                    userUsername.textContent = currentUsername;
-                    setAvatarLink.classList.remove('hidden'); // Show Set Avatar link
-                } else {
-                    signInButton.classList.remove('hidden');
-                    userProfileDisplay.classList.add('hidden');
-                    setAvatarLink.classList.add('hidden'); // Hide Set Avatar link if not logged in
-                }
-            }
-
-            // --- Sidebar Toggle Logic (for mobile) ---
-            function toggleSidebar() {
-                sidebar.classList.toggle('sidebar-open');
-                sidebarOverlay.classList.toggle('active');
-            }
-
-            hamburgerButton.addEventListener('click', toggleSidebar);
-            sidebarOverlay.addEventListener('click', toggleSidebar); // Close sidebar when overlay clicked
-
-            // --- Dark Mode Logic ---
-            const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const savedDarkMode = localStorage.getItem('darkMode');
-
-            if (savedDarkMode === 'enabled') {
-                body.classList.add('dark-mode');
-                darkModeToggle.checked = true;
-            } else if (savedDarkMode === 'disabled') {
-                body.classList.remove('dark-mode');
-                darkModeToggle.checked = false;
-            } else if (prefersDarkMode) {
-                body.classList.add('dark-mode');
-                darkModeToggle.checked = true;
-            }
-
-            darkModeToggle.addEventListener('change', () => {
-                if (darkModeToggle.checked) {
-                    body.classList.add('dark-mode');
-                    localStorage.setItem('darkMode', 'enabled');
-                } else {
-                    body.classList.remove('dark-mode');
-                    localStorage.setItem('darkMode', 'disabled');
-                }
-            });
-
-            // --- Autoplay Logic ---
-            let autoplayEnabled = localStorage.getItem('autoplayEnabled') === 'true';
-            autoplayToggle.checked = autoplayEnabled;
-
-            autoplayToggle.addEventListener('change', () => {
-                autoplayEnabled = autoplayToggle.checked;
-                localStorage.setItem('autoplayEnabled', autoplayEnabled);
-            });
-
-            // --- Video Data Management ---
-            let videos = JSON.parse(localStorage.getItem('videos')) || [
-                // Pre-existing videos
-                { id: "TolWZ965kec", title: "keys", channel: "Charlles", description: "Lyrics: (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock. (Why'd you lock me out?) (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock (Why'd you lock me out?)", thumbnail: "[http://img.youtube.com/vi/TolWZ965kec/maxresdefault.jpg](http://img.youtube.com/vi/TolWZ965kec/maxresdefault.jpg)" },
-                { id: "KDpw8eW1d4s", title: "Incredibox V9 Bonus Tracks - BDB (Visualizer)", channel: "Incredibox", description: "BDB, the third single from the V9 Bonus Tracks EP! Pump it up and chill. Stream it now!", thumbnail: "[http://img.youtube.com/vi/KDpw8eW1d4s/maxresdefault.jpg](http://img.youtube.com/vi/KDpw8eW1d4s/maxresdefault.jpg)" },
-                { id: "Cs3lYiFEOU0", title: "How I Made the Ultimate 'Portable' Wii", channel: "Shank Mods", description: "I've completed yet another childhood dream of mine: owning and making a portable Wii console! This thing was really fun to make and use.", thumbnail: "[http://img.youtube.com/vi/Cs3lYiFEOU0/maxresdefault.jpg](http://img.youtube.com/vi/Cs3lYiFEOU0/maxresdefault.jpg)" },
-                { id: "R5jZRV2D-rM", title: "Playing a Game Console Which Doesn’t Exist", channel: "James Channel", description: "What if, instead of just miniaturizing consoles, your next DIY project was constructing one from scratch? The PICO-8 is a digital 'console' designed for ultra-compact, retro-style gaming, with the slight caveat that it doesn't actually exist physically.", thumbnail: "[http://img.youtube.com/vi/R5jZRV2D-rM/maxresdefault.jpg](http://img.youtube.com/vi/R5jZRV2D-rM/maxresdefault.jpg)" },
-                { id: "7avqbIE1eAM", title: "Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]", channel: "TetraBitGaming", description: "Top 10s, Lost Bits, Mystery Bits, Bit Lift.. ALL THE BITS ARE HERE!", thumbnail: "[http://img.youtube.com/vi/7avqbIE1eAM/maxresdefault.jpg](http://img.youtube.com/vi/7avqbIE1eAM/maxresdefault.jpg)" },
-                { id: "nJ1jjDzlJgM", title: "ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep", channel: "Cosmo Whispers ASMR", description: "WARNING!: There are some mild flashing lights towards the end of this video! If you are sensitive to lights please watch with caution! My goal is to help recreate that feeling for some of you!", thumbnail: "[http://img.youtube.com/vi/nJ1jjDzlJgM/maxresdefault.jpg](http://img.youtube.com/vi/nJ1jjDzlJgM/maxresdefault.jpg)" },
-                { id: "UxGQoP3wPxM", title: "Can I get Windows 98 running on my CAR?", channel: "Kolarias", description: "With Windows ME only needing 8MB of RAM to function, it's time we take a look at Windows 98. While ME and 98 may look similar, 98 is a lot more lighter weight than ME.", thumbnail: "[http://img.youtube.com/vi/UxGQoP3wPxM/maxresdefault.jpg](http://img.youtube.com/vi/UxGQoP3wPxM/maxresdefault.jpg)" }
-            ];
-
-            function saveVideos() {
-                localStorage.setItem('videos', JSON.stringify(videos));
-            }
-
-            function renderVideoGrid(filteredVideos = videos) {
-                videoGridSection.innerHTML = '';
-                filteredVideos.forEach(video => {
-                    const videoCard = document.createElement('div');
-                    videoCard.className = 'video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4';
-                    videoCard.dataset.videoId = video.id;
-                    videoCard.dataset.title = video.title;
-                    videoCard.dataset.channel = video.channel;
-                    videoCard.dataset.description = video.description;
-
-                    videoCard.innerHTML = `
-                        <div class="video-container mb-4">
-                            <img src="[https://img.youtube.com/vi/$](https://img.youtube.com/vi/$){video.id}/hqdefault.jpg" alt="Video Thumbnail: ${video.title}">
-                        </div>
-                        <h2 class="text-lg font-semibold mb-2">${video.title}</h2>
-                        <p class="text-sm text-gray-600">${video.channel}</p>
-                    `;
-                    videoGridSection.appendChild(videoCard);
-
-                    videoCard.addEventListener('click', () => {
-                        showVideoDetail(video);
-                    });
-                });
-            }
-
-            function showVideoDetail(video) {
-                detailVideoPlayer.src = `https://www.youtube.com/embed/${video.id}?autoplay=${autoplayEnabled ? 1 : 0}`;
-                detailVideoTitle.textContent = video.title;
-                detailVideoChannel.textContent = video.channel;
-                detailVideoDescription.textContent = video.description;
-
-                videoGridSection.classList.add('hidden');
-                settingsPage.classList.add('hidden');
-                avatarSelectionPage.classList.add('hidden'); // Hide avatar page
-                videoDetailSection.classList.remove('hidden');
-                fabUploadButton.classList.add('hidden'); // Hide FAB in detail view
-            }
-
-            function showHomePage() {
-                videoDetailSection.classList.add('hidden');
-                settingsPage.classList.add('hidden');
-                avatarSelectionPage.classList.add('hidden'); // Hide avatar page
-                videoGridSection.classList.remove('hidden');
-                fabUploadButton.classList.remove('hidden'); // Show FAB on home
-                detailVideoPlayer.src = ''; // Stop video playback
-            }
-
-            homeLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showHomePage();
-                if (window.innerWidth <= 767) toggleSidebar(); // Close sidebar on mobile
-            });
-
-            settingsLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                videoGridSection.classList.add('hidden');
-                videoDetailSection.classList.add('hidden');
-                avatarSelectionPage.classList.add('hidden'); // Hide avatar page
-                settingsPage.classList.remove('hidden');
-                fabUploadButton.classList.add('hidden'); // Hide FAB in settings
-                detailVideoPlayer.src = ''; // Stop video playback
-                if (window.innerWidth <= 767) toggleSidebar(); // Close sidebar on mobile
-            });
-
-            // New: Set Avatar link functionality
-            setAvatarLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (currentUserId && currentUsername) {
-                    showAvatarSelectionPage();
-                    if (window.innerWidth <= 767) toggleSidebar(); // Close sidebar on mobile
-                } else {
-                    showMyMoogleModal(); // Prompt login if not authenticated
-                }
-            });
-
-
-            backButtonVideo.addEventListener('click', showHomePage);
-            backButtonSettings.addEventListener('click', showHomePage);
-
-            // --- Search Functionality ---
-            const searchInput = document.getElementById('search-input');
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredVideos = videos.filter(video =>
-                    video.title.toLowerCase().includes(searchTerm) ||
-                    video.channel.toLowerCase().includes(searchTerm)
-                );
-                renderVideoGrid(filteredVideos);
-            });
-
-            // --- Reset Data Functionality ---
-            resetDataButton.addEventListener('click', () => {
-                resetModal.classList.remove('hidden');
-            });
-
-            cancelResetButton.addEventListener('click', () => {
-                resetModal.classList.add('hidden');
-            });
-
-            confirmResetButton.addEventListener('click', async () => {
-                localStorage.clear(); // Clear all local storage data
-                videos = []; // Clear current video array
-                renderVideoGrid(); // Re-render empty grid
-                resetModal.classList.add('hidden');
-                // Also sign out from Firebase and clear user profile data
-                if (auth && auth.currentUser) {
-                    try {
-                        // Delete user profile from Firestore
-                        if (db) {
-                            const userDocRef = doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/profile/data`);
-                            await setDoc(userDocRef, {}, { merge: false }); // Overwrite with empty to "delete" fields
-                            console.log("User profile data cleared from Firestore.");
-                        }
-                        await signOut(auth);
-                        console.log("User signed out from Firebase.");
-                    } catch (error) {
-                        console.error("Error during reset/sign out:", error);
-                    }
-                }
-                currentUserId = null;
-                currentUsername = null;
-                currentUserAvatar = null;
-                isAvatarSet = false;
-                updateUserProfileDisplay(); // Update UI to show sign-in button
-                showMyMoogleModal(); // Prompt for login again
-                // Use custom modal for alerts
-                const successModal = document.createElement('div');
-                successModal.className = 'modal-overlay';
-                successModal.innerHTML = `
-                    <div class="modal-content">
-                        <h3 class="text-xl font-bold mb-4">Data Reset</h3>
-                        <p class="mb-6">All data has been reset!</p>
-                        <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out" onclick="this.closest('.modal-overlay').remove()">OK</button>
+            <div class="mb-6">
+                <label class="block text-lg font-medium text-gray-700 mb-2 dark:text-gray-300">Avatar</label>
+                <div id="settings-avatar-preview" class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-4xl font-bold text-gray-700 mb-4 mx-auto border-4 border-red-500 dark:bg-gray-700 dark:text-gray-300">
                     </div>
-                `;
-                document.body.appendChild(successModal);
-            });
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="A">A</button>
+                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="B">B</button>
+                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="C">C</button>
+                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="D">D</button>
+                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="E">E</button>
+                    <button class="avatar-option-settings w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700 hover:scale-110 transition-transform dark:bg-gray-700 dark:text-gray-300" data-avatar="F">F</button>
+                    </div>
+            </div>
 
-            // --- Upload Video Functionality ---
-            fabUploadButton.addEventListener('click', () => {
-                uploadVideoModal.classList.remove('hidden');
-                // Clear previous input values and error message
-                videoUrlInput.value = '';
-                videoTitleInput.value = '';
-                videoChannelInput.value = '';
-                videoDescriptionInput.value = '';
-                uploadErrorMessage.classList.add('hidden');
-                uploadErrorMessage.textContent = '';
-            });
+            <button id="save-settings-button" class="w-full bg-red-600 text-white py-2 rounded-md font-semibold hover:bg-red-700 transition duration-300 ease-in-out">
+                Save Settings
+            </button>
 
-            cancelUploadButton.addEventListener('click', () => {
-                uploadVideoModal.classList.add('hidden');
-            });
+            <button id="signout-button" class="w-full mt-4 bg-gray-200 text-gray-800 py-2 rounded-md font-semibold hover:bg-gray-300 transition duration-300 ease-in-out dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600">
+                Sign Out
+            </button>
+        </div>
+    </div>
 
-            submitUploadButton.addEventListener('click', () => {
-                const url = videoUrlInput.value.trim();
-                let videoId = '';
-                let isValidUrl = false;
-
-                // Regex to extract YouTube video ID from various URL formats
-                const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/|)([\w-]{11})(?:\S+)?/g;
-                const match = youtubeRegex.exec(url);
-
-                if (match && match[1]) {
-                    videoId = match[1];
-                    isValidUrl = true;
-                }
-
-                if (!isValidUrl || !videoId) {
-                    uploadErrorMessage.textContent = 'Please enter a valid YouTube video URL.';
-                    uploadErrorMessage.classList.remove('hidden');
-                    return;
-                }
-
-                // If a video with this ID already exists, prevent re-upload
-                if (videos.some(video => video.id === videoId)) {
-                    uploadErrorMessage.textContent = 'This video has already been added.';
-                    uploadErrorMessage.classList.remove('hidden');
-                    return;
-                }
-
-                // Basic fetching of title, channel, description, and thumbnail
-                // In a real application, you'd use a backend API (like YouTube Data API) for this.
-                // For this simulation, we'll try to infer or use provided text.
-                const newVideo = {
-                    id: videoId,
-                    title: videoTitleInput.value.trim() || `YouTube Video ${videoId}`, // Fallback title
-                    channel: videoChannelInput.value.trim() || 'Unknown Channel', // Fallback channel
-                    description: videoDescriptionInput.value.trim() || 'No description available.', // Fallback description
-                    thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` // YouTube standard thumbnail URL
-                };
-
-                videos.push(newVideo);
-                saveVideos();
-                renderVideoGrid(); // Re-render the grid to show the new video
-                uploadVideoModal.classList.add('hidden');
-            });
-
-            // --- MyMoogle Login/Signup Logic ---
-            function showMyMoogleModal() {
-                mymoogleModal.classList.remove('hidden');
-                mymoogleUsernameInput.value = '';
-                mymooglePasswordInput.value = '';
-                mymoogleErrorMessage.classList.add('hidden');
-                isNewUserToggle.checked = false;
-                mymoogleModalTitle.textContent = 'Sign In to MyMoogle';
-                submitMymoogleButton.textContent = 'Sign In';
-            }
-
-            signInButton.addEventListener('click', showMyMoogleModal);
-            cancelMymoogleButton.addEventListener('click', () => {
-                mymoogleModal.classList.add('hidden');
-            });
-
-            isNewUserToggle.addEventListener('change', () => {
-                if (isNewUserToggle.checked) {
-                    mymoogleModalTitle.textContent = 'Sign Up for MyMoogle';
-                    submitMymoogleButton.textContent = 'Sign Up';
-                } else {
-                    mymoogleModalTitle.textContent = 'Sign In to MyMoogle';
-                    submitMymoogleButton.textContent = 'Sign In';
-                }
-                mymoogleErrorMessage.classList.add('hidden'); // Clear error on toggle
-            });
-
-            submitMymoogleButton.addEventListener('click', async () => {
-                const username = mymoogleUsernameInput.value.trim();
-                const password = mymooglePasswordInput.value.trim();
-                const hashedPassword = simpleHash(password); // Hash the password
-
-                mymoogleErrorMessage.classList.add('hidden'); // Clear previous errors
-
-                if (!username || !password) {
-                    mymoogleErrorMessage.textContent = 'Please enter both username and password.';
-                    mymoogleErrorMessage.classList.remove('hidden');
-                    return;
-                }
-
-                if (isNewUserToggle.checked) { // Sign Up
-                    const usernameExists = await checkIfUsernameExists(username);
-                    if (usernameExists) {
-                        mymoogleErrorMessage.textContent = 'Username already taken. Please choose another.';
-                        mymoogleErrorMessage.classList.remove('hidden');
-                        return;
-                    }
-
-                    try {
-                        // Ensure we have an authenticated Firebase user (anonymous or otherwise)
-                        if (!auth.currentUser) {
-                            await signInAnonymously(auth); // Sign in anonymously if not already
-                            currentUserId = auth.currentUser.uid;
-                        } else if (!currentUserId) {
-                             currentUserId = auth.currentUser.uid;
-                        }
-
-                        await addNewPublicUser(currentUserId, username, hashedPassword);
-                        currentUsername = username; // Set current username
-                        mymoogleModal.classList.add('hidden');
-                        showAvatarSelectionPage(); // Go to avatar selection after successful signup
-                    } catch (error) {
-                        console.error("Error during MyMoogle signup:", error);
-                        mymoogleErrorMessage.textContent = 'Signup failed. Please try again. Error: ' + error.message;
-                        mymoogleErrorMessage.classList.remove('hidden');
-                    }
-                } else { // Sign In
-                    try {
-                        const storedUid = await getUserByUsernamePassword(username, hashedPassword);
-                        if (storedUid) {
-                            // If the user exists in public/users, sign in with their UID
-                            // This is a simplified re-authentication. In a real app, you might use custom tokens
-                            // or Firebase's email/password auth if they were created with it.
-                            // For this demo, we assume the anonymous user is now "linked" to this profile.
-                            if (auth.currentUser && auth.currentUser.uid !== storedUid) {
-                                await signOut(auth); // Sign out current anonymous user if different
-                                await signInAnonymously(auth); // Sign in a new anonymous user
-                                // Note: In a real app, you'd re-authenticate the *specific* user
-                                // associated with `storedUid`. For this demo, we link the current
-                                // anonymous session to the loaded profile.
-                            }
-                            currentUserId = auth.currentUser.uid; // Ensure currentUserId is set to the active Firebase user
-                            currentUsername = username; // Set current username
-                            await loadUserProfile(storedUid); // Load profile using the stored UID
-                            mymoogleModal.classList.add('hidden');
-                        } else {
-                            mymoogleErrorMessage.textContent = 'Invalid username or password.';
-                            mymoogleErrorMessage.classList.remove('hidden');
-                        }
-                    } catch (error) {
-                        console.error("Error during MyMoogle signin:", error);
-                        mymoogleErrorMessage.textContent = 'Sign in failed. Please try again. Error: ' + error.message;
-                        mymoogleErrorMessage.classList.remove('hidden');
-                    }
-                }
-            });
-
-            // --- Avatar Selection Logic ---
-            function showAvatarSelectionPage() {
-                videoGridSection.classList.add('hidden');
-                videoDetailSection.classList.add('hidden');
-                settingsPage.classList.add('hidden');
-                fabUploadButton.classList.add('hidden');
-                mymoogleModal.classList.add('hidden'); // Ensure login modal is hidden
-                avatarSelectionPage.classList.remove('hidden');
-                // Display current avatar or a placeholder
-                if (currentUserAvatar) {
-                    if (currentUserAvatar.startsWith('<svg')) {
-                        avatarPreview.innerHTML = currentUserAvatar;
-                    } else {
-                        avatarPreview.innerHTML = `<img src="${currentUserAvatar}" alt="Avatar Preview">`;
-                    }
-                } else if (currentUsername) {
-                    avatarPreview.innerHTML = generateGradientIcon(currentUsername[0].toUpperCase());
-                } else {
-                    // Fallback if username is somehow not set (shouldn't happen in correct flow)
-                    avatarPreview.innerHTML = `<div style="background-color: #ccc; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem;">?</div>`;
-                }
-            }
-
-            function generateGradientIcon(letter) {
-                const colors = [
-                    ['#ef4444', '#dc2626'], // Red
-                    ['#3b82f6', '#2563eb'], // Blue
-                    ['#8b5cf6', '#7c3aed'], // Purple
-                    ['#10b981', '#059669'], // Green
-                    ['#f59e0b', '#d97706']  // Amber
-                ];
-                const randomColors = colors[Math.floor(Math.random() * colors.length)];
-                return `
-                    <svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
-                        <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="${randomColors[0]}" />
-                                <stop offset="100%" stop-color="${randomColors[1]}" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="128" height="128" rx="64" fill="url(#gradient)"/>
-                        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Inter, sans-serif" font-size="64" font-weight="bold">${letter}</text>
-                    </svg>
-                `;
-            }
-
-            uploadAvatarButton.addEventListener('click', () => {
-                uploadAvatarInput.click(); // Trigger file input click
-            });
-
-            uploadAvatarInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        currentUserAvatar = e.target.result; // Data URL of the image
-                        avatarPreview.innerHTML = `<img src="${currentUserAvatar}" alt="Avatar Preview">`;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            generateAvatarButton.addEventListener('click', () => {
-                if (currentUsername) {
-                    currentUserAvatar = generateGradientIcon(currentUsername[0].toUpperCase());
-                    avatarPreview.innerHTML = currentUserAvatar;
-                } else {
-                    // Fallback if username is not set yet (shouldn't happen if flow is correct)
-                    currentUserAvatar = generateGradientIcon('?');
-                    avatarPreview.innerHTML = currentUserAvatar;
-                }
-            });
-
-            saveAvatarButton.addEventListener('click', async () => {
-                if (currentUserId && currentUsername && currentUserAvatar) {
-                    await saveUserProfile(currentUserId, currentUsername, currentUserAvatar);
-                    // User is redirected to home page by saveUserProfile
-                } else {
-                    // Handle error or prompt user to select an avatar
-                    // This scenario should ideally be prevented by design
-                    console.error("Cannot save avatar: user info or avatar missing.");
-                }
-            });
-
-            // Initial render
-            renderVideoGrid();
-            // Start intro animation only if Firebase is initialized and ready to check auth
-            if (window.app) { // Check if Firebase app was successfully initialized
-                runIntroAnimation();
-            } else {
-                // If Firebase is not initialized, skip intro and show content
-                introOverlay.style.display = 'none';
-                appContent.classList.remove('hidden');
-                body.style.overflow = 'auto';
-                showMyMoogleModal(); // Directly show login if no Firebase
-            }
-        });
-    </script>
 </body>
 </html>
