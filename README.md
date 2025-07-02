@@ -1,0 +1,1 @@
+Welcome to MyTube! This is a open source youtube video player where users can upload videos! This project is not afflaited with google (except for the fact it was created with Google's Gemini and the youtube embeds)
