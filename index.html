@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyTube - Video Gallery</title>
+    <!-- Google Fonts - Oswald -->
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for responsive video embedding */
@@ -287,6 +289,7 @@
 </head>
 <body class="bg-gray-100 text-gray-900">
 
+    <!-- Intro Animation Overlay -->
     <div id="intro-overlay">
         <div id="intro-square">
             <div id="intro-play-button"></div>
@@ -297,12 +300,15 @@
         <div id="intro-mouse"></div>
     </div>
 
+    <!-- Main Application Content -->
     <div id="app-content" class="hidden">
+        <!-- Header -->
         <header class="bg-white shadow-sm p-4 mb-6 rounded-b-lg flex items-center justify-between sticky top-0 z-50">
             <div class="flex items-center">
                 <h1 class="text-3xl font-bold text-red-600 mytube-logo">MyTube</h1>
             </div>
 
+            <!-- Simple search bar placeholder -->
             <div class="relative w-1/3 max-w-lg hidden sm:block">
                 <input type="text" id="search-input" placeholder="Search..." class="w-full p-2 pl-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
@@ -310,8 +316,9 @@
                 </svg>
             </div>
 
+            <!-- User profile/login placeholder -->
             <div class="flex items-center space-x-4">
-                <button id="upload-button" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out hidden md:block">
+                <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out hidden md:block">
                     Upload
                 </button>
                 <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out">
@@ -320,7 +327,9 @@
             </div>
         </header>
 
+        <!-- Main Content Area - Wrapper for Sidebar and Content -->
         <div id="main-content-wrapper" class="flex flex-grow ml-0 md:ml-64 transition-all duration-300 ease-in-out p-4">
+            <!-- Sidebar -->
             <aside id="sidebar" class="sidebar">
                 <nav>
                     <ul>
@@ -343,7 +352,7 @@
                         <li class="mb-2">
                             <a href="#" class="flex items-center p-2 rounded-lg hover:bg-gray-200 transition duration-200 ease-in-out">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 0 012 2v6a2 0 01-2 2H5a2 0 01-2-2v-6a2 0 012-2m14 0V9a2 0 00-2-2H5a2 0 00-2 2v2m14 0h2m-2 0h-2" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v2m14 0h2m-2 0h-2" />
                                 </svg>
                                 Subscriptions
                             </a>
@@ -369,93 +378,113 @@
                 </nav>
             </aside>
 
+            <!-- Content Area (Video Grid / Video Detail / Settings Page) -->
             <div class="flex-1 p-4">
+                <!-- Video Grid Section -->
                 <section id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Video 1: keys by Charlles -->
                     <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
                          data-video-id="TolWZ965kec"
                          data-title="keys"
                          data-channel="Charlles"
                          data-description="Lyrics: (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock. (Why'd you lock me out?) (Chorus) I keep on losing my keys, I keep on losing my keys to your heart, I keep on losing my keys, I lost my keys and you changed your lock (Why'd you lock me out?)">
                         <div class="video-container mb-4">
-                            <img src="http://img.youtube.com/vi/TolWZ965kec/maxresdefault.jpg" alt="Video Thumbnail: keys">
+                            <img src="https://img.youtube.com/vi/TolWZ965kec/hqdefault.jpg" alt="Video Thumbnail: keys">
                         </div>
                         <h2 class="text-lg font-semibold mb-2">keys</h2>
                         <p class="text-sm text-gray-600">Charlles</p>
                     </div>
 
+                    <!-- Video 2: Incredibox V9 Bonus Tracks - BDB (Visualizer) by Incredibox -->
                     <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
                          data-video-id="KDpw8eW1d4s"
                          data-title="Incredibox V9 Bonus Tracks - BDB (Visualizer)"
                          data-channel="Incredibox"
                          data-description="BDB, the third single from the V9 Bonus Tracks EP! Pump it up and chill. Stream it now!">
                         <div class="video-container mb-4">
-                            <img src="http://img.youtube.com/vi/KDpw8eW1d4s/maxresdefault.jpg" alt="Video Thumbnail: Incredibox V9 Bonus Tracks - BDB (Visualizer)">
+                            <img src="https://img.youtube.com/vi/KDpw8eW1d4s/hqdefault.jpg" alt="Video Thumbnail: Incredibox V9 Bonus Tracks - BDB (Visualizer)">
                         </div>
                         <h2 class="text-lg font-semibold mb-2">Incredibox V9 Bonus Tracks - BDB (Visualizer)</h2>
                         <p class="text-sm text-gray-600">Incredibox</p>
                     </div>
 
+                    <!-- Video 3: How I Made the Ultimate "Portable" Wii -->
                     <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
                          data-video-id="Cs3lYiFEOU0"
                          data-title="How I Made the Ultimate 'Portable' Wii"
                          data-channel="Shank Mods"
                          data-description="I've completed yet another childhood dream of mine: owning and making a portable Wii console! This thing was really fun to make and use.">
                         <div class="video-container mb-4">
-                            <img src="http://img.youtube.com/vi/Cs3lYiFEOU0/maxresdefault.jpg" alt="Video Thumbnail: How I Made the Ultimate 'Portable' Wii">
+                            <img src="https://img.youtube.com/vi/Cs3lYiFEOU0/hqdefault.jpg" alt="Video Thumbnail: How I Made the Ultimate 'Portable' Wii">
                         </div>
                         <h2 class="text-lg font-semibold mb-2">How I Made the Ultimate "Portable" Wii</h2>
                         <p class="text-sm text-gray-600">Shank Mods</p>
                     </div>
 
+                    <!-- Video 4: Playing a Game Console Which Doesn’t Exist by James Channel -->
                     <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
                          data-video-id="R5jZRV2D-rM"
                          data-title="Playing a Game Console Which Doesn’t Exist"
                          data-channel="James Channel"
                          data-description="What if, instead of just miniaturizing consoles, your next DIY project was constructing one from scratch? The PICO-8 is a digital 'console' designed for ultra-compact, retro-style gaming, with the slight caveat that it doesn't actually exist physically.">
                         <div class="video-container mb-4">
-                            <img src="http://img.youtube.com/vi/R5jZRV2D-rM/maxresdefault.jpg" alt="Video Thumbnail: Playing a Game Console Which Doesn’t Exist">
+                            <img src="https://img.youtube.com/vi/R5jZRV2D-rM/hqdefault.jpg" alt="Video Thumbnail: Playing a Game Console Which Doesn’t Exist">
                         </div>
                         <h2 class="text-lg font-semibold mb-2">Playing a Game Console Which Doesn’t Exist</h2>
                         <p class="text-sm text-gray-600">James Channel</p>
                     </div>
 
+                    <!-- Video 5: Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming] by TetraBitGaming -->
                     <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
                          data-video-id="7avqbIE1eAM"
                          data-title="Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]"
                          data-channel="TetraBitGaming"
                          data-description="Top 10s, Lost Bits, Mystery Bits, Bit Lift.. ALL THE BITS ARE HERE!">
                         <div class="video-container mb-4">
-                            <img src="http://img.youtube.com/vi/7avqbIE1eAM/maxresdefault.jpg" alt="Video Thumbnail: Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]">
+                            <img src="https://img.youtube.com/vi/7avqbIE1eAM/hqdefault.jpg" alt="Video Thumbnail: Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]">
                         </div>
                         <h2 class="text-lg font-semibold mb-2">Minecraft LOST BITS | Unused Content and Debug Features [TetraBitGaming]</h2>
                         <p class="text-sm text-gray-600">TetraBitGaming</p>
                     </div>
 
+                    <!-- Video 6: ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep by Cosmo Whispers ASMR -->
                     <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
                          data-video-id="nJ1jjDzlJgM"
                          data-title="ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep"
                          data-channel="Cosmo Whispers ASMR"
                          data-description="WARNING!: There are some mild flashing lights towards the end of this video! If you are sensitive to lights please watch with caution! My goal is to help recreate that feeling for some of you!">
                         <div class="video-container mb-4">
-                            <img src="http://img.youtube.com/vi/nJ1jjDzlJgM/maxresdefault.jpg" alt="Video Thumbnail: ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep">
+                            <img src="https://img.youtube.com/vi/nJ1jjDzlJgM/hqdefault.jpg" alt="Video Thumbnail: ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep">
                         </div>
                         <h2 class="text-lg font-semibold mb-2">ASMR A Quirky Wizard Heals Your Wounds & Helps You Sleep</h2>
                         <p class="text-sm text-gray-600">Cosmo Whispers ASMR</p>
                     </div>
 
+                    <!-- Video 7: Can I get Windows 98 running on my CAR? by Kolarias -->
                     <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4"
                          data-video-id="UxGQoP3wPxM"
                          data-title="Can I get Windows 98 running on my CAR?"
                          data-channel="Kolarias"
                          data-description="With Windows ME only needing 8MB of RAM to function, it's time we take a look at Windows 98. While ME and 98 may look similar, 98 is a lot more lighter weight than ME.">
                         <div class="video-container mb-4">
-                            <img src="http://img.youtube.com/vi/UxGQoP3wPxM/maxresdefault.jpg" alt="Video Thumbnail: Can I get Windows 98 running on my CAR?">
+                            <img src="https://img.youtube.com/vi/UxGQoP3wPxM/hqdefault.jpg" alt="Video Thumbnail: Can I get Windows 98 running on my CAR?">
                         </div>
                         <h2 class="text-lg font-semibold mb-2">Can I get Windows 98 running on my CAR?</h2>
-                        <p class="text-sm text-gray-600">Kolarias</p>
+                     <!-- Video 8: The first ever Samsung "Galaxy S" -->   <p class="text-sm text-gray-600">Kolarias</p>
                     </div>
+                    <div class="video-card bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-300 ease-in-out p-4" data-video-id="aajQJtc-oQl"
+                         data-title="The first ever Samsung &quot;Galaxy S&quot;"
+                         data-channel="DankPods"
+                         data-description="Extra vids for Floaties! https://www.floatplane.com/channel/Th...
+Car Channel:    / @garbagetime420  
+Game Channel:    / @helloimgaming  
+Drum Channel:    / @the.drum.thing  ">
+                        <div class="video-container mb-">
+                            <img src="https://img.youtube.com/vi/aajQJtc-oQl/mqdefault.jpg"
+                        </div>
                 </section>
 
+                <!-- Video Detail Section (Initially Hidden) -->
                 <section id="video-detail" class="hidden bg-white rounded-lg shadow-md p-6">
                     <button id="back-button-video" class="mb-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-2">
@@ -471,6 +500,7 @@
                     <p id="detail-video-description" class="text-base text-gray-800"></p>
                 </section>
 
+                <!-- Settings Page (Initially Hidden) -->
                 <section id="settings-page" class="hidden bg-white rounded-lg shadow-md p-6">
                     <button id="back-button-settings" class="mb-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md transition duration-300 ease-in-out flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-2">
@@ -503,6 +533,7 @@
             </div>
         </div>
 
+        <!-- Reset Data Confirmation Modal -->
         <div id="reset-modal" class="modal-overlay hidden">
             <div class="modal-content">
                 <h3 class="text-xl font-bold mb-4">Confirm Reset</h3>
@@ -518,26 +549,7 @@
             </div>
         </div>
 
-        <div id="upload-video-modal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <h3 class="text-xl font-bold mb-4">Upload New Video (YouTube Link)</h3>
-                <input type="text" id="video-url-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Enter YouTube Video URL">
-                <input type="text" id="video-title-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Video Title (Optional, will attempt to fetch)">
-                <input type="text" id="video-channel-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Channel Name (Optional, will attempt to fetch)">
-                <textarea id="video-description-input" class="w-full p-2 mb-4 border border-gray-300 rounded-md" placeholder="Description (Optional, will attempt to fetch)"></textarea>
-
-                <div class="flex justify-center space-x-4">
-                    <button id="cancel-upload" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Cancel
-                    </button>
-                    <button id="submit-upload" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                        Add Video
-                    </button>
-                </div>
-                <p id="upload-error-message" class="text-red-500 text-sm mt-4 hidden"></p>
-            </div>
-        </div>
-
+        <!-- Footer -->
         <footer class="bg-gray-800 text-white p-4 mt-6 text-center rounded-t-lg">
             <p>© 2025 MyTube. All rights reserved.</p>
         </footer>
@@ -569,19 +581,194 @@
             const confirmResetButton = document.getElementById('confirm-reset');
             const cancelResetButton = document.getElementById('cancel-reset');
 
-            // NEW: Upload button and modal elements
-            const uploadButton = document.getElementById('upload-button');
-            const uploadVideoModal = document.getElementById('upload-video-modal');
-            const videoUrlInput = document.getElementById('video-url-input');
-            const videoTitleInput = document.getElementById('video-title-input');
-            const videoChannelInput = document.getElementById('video-channel-input');
-            const videoDescriptionInput = document.getElementById('video-description-input');
-            const submitUploadButton = document.getElementById('submit-upload');
-            const cancelUploadButton = document.getElementById('cancel-upload');
-            const uploadErrorMessage = document.getElementById('upload-error-message');
+            // Intro animation elements
+            const introOverlay = document.getElementById('intro-overlay');
+            const introSquare = document.getElementById('intro-square');
+            const introPlayButton = document.getElementById('intro-play-button');
+            const introMouse = document.getElementById('intro-mouse');
+            const introLogoText = document.getElementById('intro-logo-text');
+            const appContent = document.getElementById('app-content');
+
+            // Search functionality elements
+            const searchInput = document.getElementById('search-input');
+            const videoCards = document.querySelectorAll('.video-card');
 
 
-            // I
+            // --- Intro Animation Sequence ---
+            function startIntroAnimation() {
+                const squareRect = introSquare.getBoundingClientRect();
+                const squareCenterX = squareRect.left + squareRect.width / 2;
+                const squareCenterY = squareRect.top + squareRect.height / 2;
+
+                // Set initial mouse position
+                introMouse.style.left = `${squareCenterX}px`;
+                introMouse.style.top = `${squareCenterY}px`;
+                introMouse.style.opacity = 1;
+
+                // Step 1: Mouse moves to play button and clicks
+                setTimeout(() => {
+                    introMouse.classList.add('clicking'); // Simulate click
+                    setTimeout(() => {
+                        introMouse.classList.remove('clicking');
+                        introMouse.style.opacity = 0; // Make mouse disappear after click
+
+                        // Step 2: Play button fades out
+                        introPlayButton.style.opacity = 0;
+
+                        // Step 3: Square spins and scales up, then fades out
+                        introSquare.style.transform = 'scale(2) rotate(360deg)';
+                        introSquare.style.opacity = 0; // Fade out the square
+
+                        // Step 4: MyTube text appears and scales up
+                        introLogoText.classList.add('show-logo-text');
+
+                        setTimeout(() => {
+                            // Step 5: Fade out intro overlay and show app content
+                            introOverlay.style.opacity = 0;
+                            introOverlay.style.pointerEvents = 'none'; // Disable pointer events
+                            setTimeout(() => {
+                                introOverlay.classList.add('hidden');
+                                appContent.classList.remove('hidden');
+                                body.style.overflow = 'auto'; // Re-enable scrolling
+                            }, 500); // Duration of introOverlay fade-out
+                        }, 700); // Duration for text to appear (after square starts fading)
+                    }, 200); // Short click duration
+                }, 1000); // Initial delay before mouse click animation starts
+            }
+
+            // Start animation when DOM is fully loaded
+            startIntroAnimation();
+
+            // --- Utility Functions for Page Navigation ---
+            function showSection(sectionToShow) {
+                videoGridSection.classList.add('hidden');
+                videoDetailSection.classList.add('hidden');
+                settingsPage.classList.add('hidden');
+                sectionToShow.classList.remove('hidden');
+            }
+
+            function showVideoGrid() {
+                detailVideoPlayer.src = ""; // Stop video playback
+                showSection(videoGridSection);
+            }
+
+            function showVideoDetail(videoId, title, channel, description) {
+                const autoplayParam = autoplayToggle.checked ? '?autoplay=1' : '';
+                detailVideoPlayer.src = `https://www.youtube.com/embed/${videoId}${autoplayParam}`;
+                detailVideoTitle.textContent = title;
+                detailVideoChannel.textContent = channel;
+                detailVideoDescription.textContent = description;
+                showSection(videoDetailSection);
+            }
+
+            function showSettingsPage() {
+                showSection(settingsPage);
+            }
+
+            // --- Autoplay Logic ---
+            const autoplayEnabled = localStorage.getItem('autoplayEnabled') === 'true';
+            autoplayToggle.checked = autoplayEnabled;
+
+            autoplayToggle.addEventListener('change', () => {
+                localStorage.setItem('autoplayEnabled', autoplayToggle.checked);
+            });
+
+            // --- Dark Mode Logic ---
+            const darkModeEnabled = localStorage.getItem('darkModeEnabled') === 'true';
+
+            function applyDarkMode(isEnabled) {
+                if (isEnabled) {
+                    body.classList.add('dark-mode');
+                } else {
+                    body.classList.remove('dark-mode');
+                }
+                darkModeToggle.checked = isEnabled;
+            }
+
+            applyDarkMode(darkModeEnabled); // Apply initial state
+
+            darkModeToggle.addEventListener('change', () => {
+                const isEnabled = darkModeToggle.checked;
+                localStorage.setItem('darkModeEnabled', isEnabled);
+                applyDarkMode(isEnabled);
+            });
+
+            // --- Reset Data Logic ---
+            resetDataButton.addEventListener('click', () => {
+                resetModal.classList.remove('hidden'); // Show confirmation modal
+            });
+
+            confirmResetButton.addEventListener('click', () => {
+                localStorage.clear(); // Clear all data from localStorage
+                resetModal.classList.add('hidden'); // Hide modal
+                location.reload(); // Reload the page to apply changes
+            });
+
+            cancelResetButton.addEventListener('click', () => {
+                resetModal.classList.add('hidden'); // Hide modal
+            });
+
+            // --- Search Functionality ---
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                videoCards.forEach(card => {
+                    const title = card.dataset.title.toLowerCase();
+                    const channel = card.dataset.channel.toLowerCase();
+                    const description = card.dataset.description.toLowerCase(); // Include description in search
+
+                    if (title.includes(searchTerm) || channel.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = ''; // Show the card
+                    } else {
+                        card.style.display = 'none'; // Hide the card
+                    }
+                });
+            });
+
+
+            // --- Event Listeners ---
+            document.querySelectorAll('.video-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const videoId = card.dataset.videoId;
+                    const title = card.dataset.title;
+                    const channel = card.dataset.channel;
+                    const description = card.dataset.description;
+                    showVideoDetail(videoId, title, channel, description);
+                });
+            });
+
+            homeLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+                showVideoGrid();
+            });
+
+            settingsLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+                showSettingsPage();
+            });
+
+            backButtonVideo.addEventListener('click', showVideoGrid);
+            backButtonSettings.addEventListener('click', showVideoGrid);
+
+            // --- Initial setup for sidebar visibility on desktop ---
+            if (window.innerWidth >= 768) {
+                sidebar.classList.add('sidebar-open'); // Always open on desktop for this version
+                mainContentWrapper.style.marginLeft = '256px';
+            } else {
+                sidebar.classList.remove('sidebar-open'); // Ensure it's closed on mobile
+                mainContentWrapper.style.marginLeft = '0';
+            }
+
+            // Adjust layout on window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.add('sidebar-open');
+                    mainContentWrapper.style.marginLeft = '256px';
+                } else {
+                    sidebar.classList.remove('sidebar-open');
+                    mainContentWrapper.style.marginLeft = '0';
+                }
+            });
+        });
     </script>
 </body>
 </html>
